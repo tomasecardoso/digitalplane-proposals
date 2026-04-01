@@ -471,9 +471,31 @@ RESUMO DA REUNIÃO:
 ${inputs.granolaNotes}
 ${inputs.extraContext?'\nCONTEXTO ADICIONAL:\n'+inputs.extraContext:''}
 
-Responde APENAS com JSON válido (sem markdown, sem backticks):
-{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"<p>...</p><p>...</p>","approach_body":"<p>...</p>","deliverables":[{"num":"01","name":"...","desc":"..."}],"timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],"investment_context":"...","start_date":"..."}
+Analisa o contexto e determina o investment_type correcto:
+- "simple": oferta única com preço fixo (ex: Content Accelerator)
+- "multi_pillar": múltiplos pilares com preços distintos (ex: Marca Pessoal + Marca Empresarial)
+- "revenue_share": inclui componente de revenue share além de retainer fixo
 
+Responde APENAS com JSON válido (sem markdown, sem backticks):
+{
+  "hero_subtitle":"...",
+  "challenge_quote":"...",
+  "challenge_body":"<p>...</p><p>...</p>",
+  "approach_body":"<p>...</p>",
+  "deliverables":[{"num":"01","name":"...","desc":"..."}],
+  "timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],
+  "investment_type":"simple",
+  "investment_context":"...",
+  "pillars":[{"name":"...","price":"...","currency":"€","period":"mês","includes":["..."]}],
+  "revenue_share":[{"label":"...","value":"...","basis":"..."}],
+  "total_retainer":"",
+  "payment_structure":"...",
+  "start_date":"..."
+}
+
+Para investment_type "simple": preenche só investment_context, payment_structure, start_date. pillars e revenue_share ficam vazios.
+Para "multi_pillar": preenche pillars com cada pilar. total_retainer é a soma. revenue_share fica vazio.
+Para "revenue_share": preenche pillars, total_retainer E revenue_share.
 3-5 entregáveis, 4-5 fases. Adapta ao contexto específico desta call.`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -501,8 +523,8 @@ ${histText}
 FEEDBACK: "${feedback}"
 
 Aplica apenas o que o feedback pede. Mantém tudo o resto.
-Responde APENAS com JSON completo actualizado (sem markdown):
-{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_context":"...","start_date":"..."}`;
+Responde APENAS com JSON completo actualizado (sem markdown). Mantém o mesmo investment_type e estrutura de pillars/revenue_share do conteúdo actual. Só modifica o que o feedback pede:
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_type":"...","investment_context":"...","pillars":[...],"revenue_share":[...],"total_retainer":"...","payment_structure":"...","start_date":"..."}`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
@@ -515,21 +537,66 @@ Responde APENAS com JSON completo actualizado (sem markdown):
   return JSON.parse(text);
 }
 
+function buildInvestmentHTML(inputs, content) {
+  const type = content.investment_type || "simple";
+  const payStruct = content.payment_structure || inputs.offerPayment || "50% entrada · 50% no início do 2.º mês";
+  const startDate = content.start_date || inputs.offerStart || "Mediante acordo";
+
+  if (type === "simple") {
+    return `<div class="investment-card fade-up">
+<div class="investment-label">Investimento Total</div>
+<div class="investment-price"><sup>${inputs.offerCurrency}</sup>${inputs.offerPrice}</div>
+<div class="investment-terms">
+<div class="term-row"><span class="term-key">Duração</span><span class="term-val">${inputs.offerDuration||"3 meses"}</span></div>
+<div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div>
+<div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div>
+<div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div>
+</div></div>`;
+  }
+
+  // multi_pillar or revenue_share
+  const pillars = (content.pillars||[]).map(p => {
+    const inc = (p.includes||[]).map(i=>`<li>${i}</li>`).join("");
+    return `<div class="pillar-card fade-up">
+<div class="pillar-header"><div class="pillar-name">${p.name}</div><div class="pillar-price"><sup>${p.currency||"€"}</sup>${p.price}<span class="pillar-period">/${p.period||"mês"}</span></div></div>
+${inc ? `<ul class="pillar-includes">${inc}</ul>` : ""}
+</div>`;
+  }).join("");
+
+  const revShare = (content.revenue_share||[]).length > 0 ? `
+<div class="rev-share-block fade-up">
+<div class="rev-share-label">Revenue Share</div>
+${(content.revenue_share||[]).map(r=>`<div class="rev-row"><span class="rev-label">${r.label}</span><span class="rev-val">${r.value} <span class="rev-basis">${r.basis}</span></span></div>`).join("")}
+<div class="rev-note">Este modelo garante alinhamento total entre o esforço da Digital Plane e os teus resultados — crescemos juntos.</div>
+</div>` : "";
+
+  const total = content.total_retainer ? `<div class="total-retainer fade-up"><span class="total-label">Retainer Total</span><span class="total-val">€${content.total_retainer}<span class="total-period">/mês</span></span></div>` : "";
+
+  return `<div class="pillars-wrap">${pillars}</div>
+${total}
+${revShare}
+<div class="investment-terms-simple fade-up">
+<div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div>
+<div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div>
+<div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div>
+</div>`;
+}
+
 function buildHTML(inputs, content) {
-  const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join('');
-  const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join('');
-  const webhook = cfg('webhook')||'https://hook.eu1.make.com/placeholder';
+  const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join("");
+  const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join("");
+  const investHTML = buildInvestmentHTML(inputs, content);
+  const webhook = cfg("webhook")||"https://hook.eu1.make.com/placeholder";
   return PROPOSAL_TEMPLATE
     .replace(/{{CLIENT_NAME}}/g,inputs.clientName).replace(/{{OFFER_NAME}}/g,inputs.offerName)
     .replace(/{{PROPOSAL_DATE}}/g,today()).replace(/{{EXPIRY_DATE}}/g,expiry())
-    .replace(/{{CURRENCY}}/g,inputs.offerCurrency).replace(/{{PRICE}}/g,inputs.offerPrice)
-    .replace(/{{DURATION}}/g,inputs.offerDuration||'3 meses')
-    .replace(/{{PAYMENT_STRUCTURE}}/g,inputs.offerPayment||'50% entrada · 50% no início do 2.º mês')
-    .replace(/{{START_DATE}}/g,content.start_date||inputs.offerStart||'Mediante acordo')
+    .replace(/{{INVESTMENT_HTML}}/g,investHTML)
+    .replace(/{{START_DATE}}/g,content.start_date||inputs.offerStart||"Mediante acordo")
     .replace(/{{HERO_SUBTITLE}}/g,content.hero_subtitle).replace(/{{CHALLENGE_QUOTE}}/g,content.challenge_quote)
     .replace(/{{CHALLENGE_BODY}}/g,content.challenge_body).replace(/{{APPROACH_BODY}}/g,content.approach_body)
     .replace(/{{DELIVERABLES_HTML}}/g,delivHTML).replace(/{{TIMELINE_HTML}}/g,timeHTML)
-    .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context).replace(/{{MAKE_WEBHOOK_URL}}/g,webhook);
+    .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context||"")
+    .replace(/{{MAKE_WEBHOOK_URL}}/g,webhook);
 }
 
 async function pushToGitHub(filename, html) {
@@ -699,6 +766,30 @@ section{padding:7rem 4rem;border-bottom:1px solid var(--border);position:relativ
 .timeline-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.5rem;}
 .timeline-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
 .investment-section{background:var(--surface);}
+.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+.pillar-card{background:var(--black);border:1px solid var(--border-light);padding:2rem;position:relative;overflow:hidden;}
+.pillar-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
+.pillar-name{font-family:"Bebas Neue",sans-serif;font-size:1.3rem;letter-spacing:0.03em;line-height:1.1;}
+.pillar-price{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;}
+.pillar-period{font-size:0.6em;color:var(--text-muted);font-family:"DM Mono",monospace;}
+.pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;}
+.pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
+.pillar-includes li::before{content:"→";position:absolute;left:0;color:var(--accent);font-size:0.7rem;}
+.total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);margin-bottom:1.5rem;}
+.total-label{font-family:"DM Mono",monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);}
+.total-val{font-family:"Bebas Neue",sans-serif;font-size:2.2rem;letter-spacing:0.02em;color:var(--text-primary);}
+.total-period{font-size:0.35em;color:var(--text-muted);font-family:"DM Mono",monospace;}
+.rev-share-block{border:1px solid var(--border-light);padding:2rem;margin-bottom:1.5rem;}
+.rev-share-label{font-family:"DM Mono",monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
+.rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);}
+.rev-row:last-of-type{border-bottom:none;}
+.rev-label{font-size:0.875rem;color:var(--text-secondary);}
+.rev-val{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:0.03em;color:var(--text-primary);}
+.rev-basis{font-family:"DM Mono",monospace;font-size:0.45em;color:var(--text-muted);display:block;text-align:right;margin-top:-4px;}
+.rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1rem;line-height:1.6;}
+.investment-terms-simple{border-top:1px solid var(--border);padding-top:1.5rem;}
+
 .investment-card{border:1px solid var(--border-light);padding:4rem;max-width:700px;position:relative;overflow:hidden;}
 .investment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
 .investment-price{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.5rem);letter-spacing:0.02em;line-height:1;margin:1.5rem 0;}
@@ -731,6 +822,31 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 .footer-logo,.footer-meta{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
+
+.investment-intro{max-width:600px;margin-bottom:2.5rem;}
+.investment-dynamic{width:100%;}
+.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px;}
+.pillar-card{background:var(--black);padding:2rem 2.5rem;transition:background 0.2s;}
+.pillar-card:hover{background:var(--surface);}
+.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
+.pillar-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;}
+.pillar-price{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;text-align:right;}
+.pillar-price sup{font-size:0.5em;vertical-align:super;font-family:'DM Mono',monospace;}
+.pillar-period{font-size:0.45em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;}
+.pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;padding:0;}
+.pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
+.total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2.5rem;background:var(--surface);border:1px solid var(--border-light);border-top:1px solid var(--accent);margin-bottom:1px;}
+.total-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.total-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;color:var(--text-primary);}
+.total-period{font-size:0.4em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;margin-left:0.25em;}
+.rev-share-block{background:var(--surface);border:1px solid var(--border-light);padding:2rem 2.5rem;margin-bottom:1px;}
+.rev-share-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
+.rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.875rem;}
+.rev-label{color:var(--text-secondary);}
+.rev-val{font-weight:400;color:var(--text-primary);text-align:right;}
+.rev-basis{font-size:0.75em;color:var(--text-muted);margin-left:0.3em;}
+.rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);line-height:1.6;}
+.investment-terms-simple{border:1px solid var(--border-light);padding:1.25rem 2.5rem;background:var(--surface);}
 @media(max-width:768px){.hero-nav,.hero-content{padding:1.5rem;}section{padding:4rem 1.5rem;}.hero-footer{grid-template-columns:1fr;}.hero-stat{padding:1.25rem 1.5rem;border-right:none;border-bottom:1px solid var(--border);}.two-col{grid-template-columns:1fr;gap:3rem;}.investment-card{padding:2rem;}footer{padding:1.5rem;flex-direction:column;gap:1rem;text-align:center;}}
 </style>
 </head>
@@ -774,22 +890,7 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 <div class="timeline fade-up">{{TIMELINE_HTML}}</div>
 </div>
 </section>
-<section class="investment-section">
-<div class="section-label" data-num="04">O Investimento</div>
-<div class="two-col">
-<div><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>
-<div class="investment-card fade-up">
-<div class="investment-label">Investimento Total</div>
-<div class="investment-price"><sup>{{CURRENCY}}</sup>{{PRICE}}</div>
-<div class="investment-terms">
-<div class="term-row"><span class="term-key">Dura\xe7\xe3o</span><span class="term-val">{{DURATION}}</span></div>
-<div class="term-row"><span class="term-key">Estrutura de Pagamento</span><span class="term-val">{{PAYMENT_STRUCTURE}}</span></div>
-<div class="term-row"><span class="term-key">In\xedcio</span><span class="term-val">{{START_DATE}}</span></div>
-<div class="term-row"><span class="term-key">Validade da Proposta</span><span class="term-val">{{EXPIRY_DATE}}</span></div>
-</div>
-</div>
-</div>
-</section>
+<section class="investment-section">\n<div class="section-label" data-num="04">O Investimento</div>\n<div class="investment-intro"><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>\n<div class="investment-dynamic">{{INVESTMENT_HTML}}</div>\n</section>
 <section class="accept-section">
 <div class="accept-inner">
 <div class="section-label" data-num="05">Avan\xe7ar</div>
