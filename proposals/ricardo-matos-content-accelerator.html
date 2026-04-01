@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposta — Ricardo Matos × Digital Plane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #0a0a0a; --off-black: #111111; --surface: #161616;
+      --border: rgba(255,255,255,0.07); --border-light: rgba(255,255,255,0.12);
+      --text-primary: #f0ede8; --text-secondary: rgba(240,237,232,0.5);
+      --text-muted: rgba(240,237,232,0.28);
+      --accent: #ff5a00; --accent-dim: rgba(255,90,0,0.12); --accent-dim2: rgba(255,90,0,0.05);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background-color: var(--black); color: var(--text-primary); font-family: 'Inter', sans-serif; font-weight: 300; line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 1000; opacity: 0.6; }
+    #progress { position: fixed; top: 0; left: 0; height: 1px; background: var(--accent); width: 0%; transition: width 0.1s linear; z-index: 999; }
+    .hero { min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; padding: 0; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255,90,0,0.04) 0%, transparent 60%), linear-gradient(180deg, #0a0a0a 0%, #0d0d0d 100%); }
+    .hero-line-v { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border); }
+    .hero-line-v:nth-child(1) { left: 8.33%; } .hero-line-v:nth-child(2) { left: 50%; } .hero-line-v:nth-child(3) { right: 8.33%; }
+    .hero-nav { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 2rem 4rem; border-bottom: 1px solid var(--border); }
+    .logo { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-secondary); }
+    .nav-meta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--text-muted); text-transform: uppercase; }
+    .hero-content { position: relative; z-index: 10; display: flex; flex-direction: column; justify-content: center; padding: 6rem 4rem; max-width: 1100px; }
+    .proposal-tag { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1rem; }
+    .proposal-tag::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--accent); }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 8vw, 7.5rem); letter-spacing: 0.02em; line-height: 0.95; margin-bottom: 3rem; }
+    .hero-title em { font-style: italic; color: var(--accent); }
+    .hero-subtitle { font-size: 1rem; color: var(--text-secondary); max-width: 480px; line-height: 1.8; font-weight: 300; }
+    .hero-footer { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); }
+    .hero-stat { padding: 1.75rem 4rem; border-right: 1px solid var(--border); }
+    .hero-stat:last-child { border-right: none; }
+    .stat-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.03em; color: var(--text-primary); }
+    section { padding: 7rem 4rem; border-bottom: 1px solid var(--border); position: relative; }
+    .section-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 4rem; display: flex; align-items: center; gap: 1rem; }
+    .section-label::before { content: attr(data-num); color: var(--text-muted); }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 4vw, 3.5rem); letter-spacing: 0.02em; line-height: 1.1; margin-bottom: 2.5rem; max-width: 700px; }
+    .section-title em { font-style: italic; color: var(--accent); }
+    .section-body { font-size: 1rem; color: var(--text-secondary); max-width: 620px; line-height: 1.9; }
+    .section-body p + p { margin-top: 1.25rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: start; }
+    .challenge-quote { border-left: 1px solid var(--accent); padding: 2rem 2.5rem; margin: 1rem 0; background: var(--accent-dim2); }
+    .challenge-quote p { font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 300; font-style: italic; line-height: 1.8; color: var(--text-primary); }
+    .deliverables-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 4rem; }
+    .deliverable-item { background: var(--black); padding: 2.5rem; transition: background 0.3s; }
+    .deliverable-item:hover { background: var(--surface); }
+    .deliverable-num { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; color: var(--accent); margin-bottom: 1.25rem; }
+    .deliverable-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.03em; margin-bottom: 0.75rem; }
+    .deliverable-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7; }
+    .timeline { margin-top: 4rem; position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, var(--accent) 0%, var(--border) 100%); }
+    .timeline-item { padding: 0 0 3.5rem 3rem; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: -3px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-phase { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .timeline-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.03em; margin-bottom: 0.5rem; }
+    .timeline-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7; }
+    .investment-section { background: var(--surface); }
+    .investment-card { border: 1px solid var(--border-light); padding: 4rem; max-width: 700px; position: relative; overflow: hidden; }
+    .investment-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); }
+    .investment-price { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 6vw, 5.5rem); letter-spacing: 0.02em; line-height: 1; margin: 1.5rem 0; }
+    .investment-price sup { font-size: 0.35em; vertical-align: super; color: var(--accent); font-family: 'DM Mono', monospace; }
+    .investment-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; color: var(--text-muted); text-transform: uppercase; }
+    .investment-terms { margin-top: 2.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
+    .term-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .term-row:last-child { border-bottom: none; }
+    .term-key { color: var(--text-muted); } .term-val { color: var(--text-primary); font-weight: 400; }
+    .accept-section { background: var(--black); }
+    .accept-inner { max-width: 640px; }
+    .accept-form { margin-top: 3.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+    .field-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .field-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+    .field-input { background: transparent; border: none; border-bottom: 1px solid var(--border-light); padding: 0.75rem 0; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 300; outline: none; transition: border-color 0.2s; width: 100%; }
+    .field-input:focus { border-color: var(--accent); }
+    .field-input::placeholder { color: var(--text-muted); }
+    .checkbox-group { display: flex; align-items: flex-start; gap: 1rem; cursor: pointer; }
+    .checkbox-group input[type="checkbox"] { display: none; }
+    .checkbox-custom { width: 18px; height: 18px; border: 1px solid var(--border-light); flex-shrink: 0; margin-top: 3px; position: relative; transition: border-color 0.2s, background 0.2s; }
+    .checkbox-group input:checked + .checkbox-custom { background: var(--accent); border-color: var(--accent); }
+    .checkbox-group input:checked + .checkbox-custom::after { content: ''; position: absolute; inset: 3px; background: var(--black); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+    .checkbox-text { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+    .btn-accept { margin-top: 1rem; background: var(--accent); color: var(--black); border: none; padding: 1.25rem 3rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s, transform 0.2s; align-self: flex-start; }
+    .btn-accept:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-accept:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .success-message { display: none; background: var(--accent-dim); border: 1px solid rgba(255,90,0,0.3); padding: 2rem 2.5rem; margin-top: 2rem; }
+    .success-message.show { display: block; }
+    .success-message p { font-size: 1rem; font-style: italic; }
+    footer { padding: 2.5rem 4rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); }
+    .footer-logo { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-muted); }
+    .footer-meta { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--text-muted); }
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 768px) {
+      .hero-nav, .hero-content, section { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .hero-footer { grid-template-columns: 1fr; }
+      .hero-stat { padding: 1.25rem 1.5rem; border-right: none; border-bottom: 1px solid var(--border); }
+      .two-col { grid-template-columns: 1fr; gap: 3rem; }
+      .investment-card { padding: 2rem; }
+      footer { padding: 1.5rem; flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<section class="hero" style="padding:0; border-bottom: 1px solid var(--border);">
+  <div class="hero-bg"></div>
+  <div class="hero-line-v"></div><div class="hero-line-v"></div><div class="hero-line-v"></div>
+  <nav class="hero-nav">
+    <span class="logo">Digital Plane</span>
+    <span class="nav-meta">Proposta Confidencial &nbsp;·&nbsp; 1 de abril de 2026</span>
+  </nav>
+  <div class="hero-content">
+    <div class="proposal-tag">Proposta Estratégica</div>
+    <h1 class="hero-title">Ricardo Matos<br><em>× Digital Plane</em></h1>
+    <p class="hero-subtitle">Transformar a marca pessoal do Ricardo numa plataforma de negócios escalável que atrai capital e conecta operadores.</p>
+  </div>
+  <div class="hero-footer">
+    <div class="hero-stat"><div class="stat-label">Cliente</div><div class="stat-value">Ricardo Matos</div></div>
+    <div class="hero-stat"><div class="stat-label">Proposta</div><div class="stat-value">Content Accelerator</div></div>
+    <div class="hero-stat"><div class="stat-label">Validade</div><div class="stat-value">15 de abril de 2026</div></div>
+  </div>
+</section>
+<section>
+  <div class="section-label" data-num="01">O Ponto de Partida</div>
+  <div class="two-col">
+    <div><h2 class="section-title">O que <em>identificámos</em> na nossa conversa</h2></div>
+    <div>
+      <div class="challenge-quote fade-up"><p>Queremos passar de educar iniciantes para agregar investidores experientes e criar um sistema de matchmaking escalável.</p></div>
+      <div class="section-body fade-up"><p>O Ricardo chegou ao limite do modelo tradicional de infoprodutos. Depois de anos a educar iniciantes, o mercado evoluiu e os investidores experientes procuram algo diferente: acesso a operadores qualificados, oportunidades de capital e networking estratégico, não mais cursos gravados.</p><p>A marca pessoal forte e o portfolio diversificado de projetos imobiliários criam a oportunidade perfeita para reposicionar o Ricardo como o 'Game Master' que conecta capital, operadores e negócios. Mas esta transição exige narrativa estratégica, conteúdo premium e eventos que demonstrem valor real aos investidores sérios.</p></div>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="section-label" data-num="02">A Nossa Abordagem</div>
+  <h2 class="section-title">Não vendemos <em>conteúdo.</em><br>Construímos autoridade.</h2>
+  <div class="section-body fade-up" style="margin-bottom: 2rem;"><p>A Digital Plane vai estruturar a evolução da marca Ricardo Matos através de três eixos: reposicionamento como agregador de negócios, criação de experiências premium para investidores experientes, e documentação estratégica dos projetos imobiliários para gerar credibilidade e FOMO.</p><p>O nosso foco será criar a narrativa do 'Game Master' através de conteúdo orgânico de alta qualidade, eventos exclusivos como o Field Investors, e um sistema de conteúdo que alimenta tanto a marca pessoal quanto os lançamentos de produtos e imóveis.</p></div>
+  <div class="deliverables-grid"><div class="deliverable-item"><div class="deliverable-num">01</div><div class="deliverable-name">Rebranding Estratégico</div><div class="deliverable-desc">Posicionamento completo como 'Game Master', identidade visual das personagens (operador, investidor, consultores) e narrativa de marca para atrair investidores experientes.</div></div><div class="deliverable-item"><div class="deliverable-num">02</div><div class="deliverable-name">Produção de Conteúdo Premium</div><div class="deliverable-desc">Documentação mensal dos projetos imobiliários, séries exclusivas, conteúdo para YouTube e redes sociais alinhado com lançamentos e estratégia de negócio.</div></div><div class="deliverable-item"><div class="deliverable-num">03</div><div class="deliverable-name">Eventos Estratégicos</div><div class="deliverable-desc">Conceção e execução do Field Investors (Outubro), ImoCircle Meetup (Maio) e eventos de validação com operadores, incluindo experiência premium e geração de conteúdo.</div></div><div class="deliverable-item"><div class="deliverable-num">04</div><div class="deliverable-name">Sistema de Lançamentos</div><div class="deliverable-desc">Criação de VSLs, criativos para campanhas, materiais para lançamento de produtos e imóveis, incluindo eventos de lançamento que geram FOMO e vendem no próprio dia.</div></div></div>
+</section>
+<section>
+  <div class="section-label" data-num="03">O Processo</div>
+  <div class="two-col">
+    <div>
+      <h2 class="section-title">Como <em>acontece</em> na prática</h2>
+      <p class="section-body">Do primeiro briefing à primeira publicação — um processo pensado para exigir o mínimo de ti e entregar o máximo de impacto.</p>
+    </div>
+    <div class="timeline fade-up"><div class="timeline-item"><div class="timeline-phase">Mês 1-2</div><div class="timeline-title">Reposicionamento Estratégico</div><div class="timeline-desc">Desenvolvimento da nova identidade de marca, personagens e narrativa do Game Master. Início da produção de conteúdo com foco no novo posicionamento.</div></div><div class="timeline-item"><div class="timeline-phase">Mês 3-4</div><div class="timeline-title">Evento de Validação</div><div class="timeline-desc">Produção e execução do ImoCircle Meetup (Maio) como teste da nova estratégia e criação de conteúdo para validar o posicionamento junto da comunidade.</div></div><div class="timeline-item"><div class="timeline-phase">Mês 5-8</div><div class="timeline-title">Construção de Autoridade</div><div class="timeline-desc">Documentação intensiva dos projetos imobiliários, criação das séries premium e desenvolvimento de conteúdo que suporta o novo posicionamento de agregador.</div></div><div class="timeline-item"><div class="timeline-phase">Mês 9-10</div><div class="timeline-title">Evento Principal</div><div class="timeline-desc">Conceção e execução do Field Investors (Outubro) - experiência premium que consolida o posicionamento e gera receita significativa com investidores de alto valor.</div></div><div class="timeline-item"><div class="timeline-phase">Mês 11-12</div><div class="timeline-title">Escalabilidade</div><div class="timeline-desc">Optimização do sistema de lançamentos, criação de produtos premium e estabelecimento do modelo de matchmaking entre capital e operadores.</div></div></div>
+  </div>
+</section>
+<section class="investment-section">
+  <div class="section-label" data-num="04">O Investimento</div>
+  <div class="two-col">
+    <div>
+      <h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2>
+      <p class="section-body">Este investimento posiciona o Ricardo para capturar o segmento de maior valor no mercado imobiliário português. O ROI vem tanto da receita directa dos eventos e produtos premium quanto das comissões de matchmaking e percentagens nos negócios facilitados.</p>
+    </div>
+    <div class="investment-card fade-up">
+      <div class="investment-label">Investimento Total</div>
+      <div class="investment-price"><sup>€</sup>4500€ ; 1500€</div>
+      <div class="investment-terms">
+        <div class="term-row"><span class="term-key">Duração</span><span class="term-val">12 meses</span></div>
+        <div class="term-row"><span class="term-key">Estrutura de Pagamento</span><span class="term-val">2 opções: mensal ou upfront com 2 meses de desconto, ou 6 meses com 1 mês de desconto</span></div>
+        <div class="term-row"><span class="term-key">Início</span><span class="term-val">Abril de 2024</span></div>
+        <div class="term-row"><span class="term-key">Validade da Proposta</span><span class="term-val">15 de abril de 2026</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="accept-section">
+  <div class="accept-inner">
+    <div class="section-label" data-num="05">Avançar</div>
+    <h2 class="section-title">Pronto para <em>começar?</em></h2>
+    <p class="section-body">Assina abaixo para confirmar a tua aceitação desta proposta. Assim que recebermos, enviamos o contrato formal e os próximos passos.</p>
+    <div class="accept-form">
+      <div class="field-group">
+        <label class="field-label">Nome completo</label>
+        <input type="text" class="field-input" id="sig-name" placeholder="Nome como aparece no contrato" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input type="email" class="field-input" id="sig-email" placeholder="email@empresa.com" />
+      </div>
+      <label class="checkbox-group">
+        <input type="checkbox" id="sig-agree" />
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">Li e aceito os termos desta proposta. Entendo que a Digital Plane irá enviar o contrato formal após confirmação.</span>
+      </label>
+      <button class="btn-accept" id="btn-submit" disabled onclick="handleAccept()">Aceitar Proposta</button>
+      <div class="success-message" id="success-msg">
+        <p>Obrigado, Ricardo Matos. A tua confirmação foi registada. Receberás o contrato em breve.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<footer>
+  <span class="footer-logo">Digital Plane © 2025</span>
+  <span class="footer-meta">Proposta confidencial · Ricardo Matos · 1 de abril de 2026</span>
+</footer>
+<script>
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    document.getElementById('progress').style.width = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+  });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => { if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), i * 120); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  const nameInput = document.getElementById('sig-name');
+  const emailInput = document.getElementById('sig-email');
+  const agreeCheck = document.getElementById('sig-agree');
+  const submitBtn = document.getElementById('btn-submit');
+  function checkForm() { submitBtn.disabled = !(nameInput.value.trim().length > 2 && emailInput.value.includes('@') && agreeCheck.checked); }
+  [nameInput, emailInput].forEach(el => el.addEventListener('input', checkForm));
+  agreeCheck.addEventListener('change', checkForm);
+  function handleAccept() {
+    submitBtn.disabled = true; submitBtn.textContent = 'A registar...';
+    fetch('https://hook.eu1.make.com/placeholder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client: 'Ricardo Matos', signer_name: nameInput.value.trim(), signer_email: emailInput.value.trim(), proposal: 'Content Accelerator', accepted_at: new Date().toISOString() }) })
+    .finally(() => { submitBtn.textContent = 'Proposta Aceite ✓'; document.getElementById('success-msg').classList.add('show'); });
+  }
+</script>
+</body>
+</html>
