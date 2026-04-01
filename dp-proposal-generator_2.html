@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Plane — Proposal Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#0c0c0c;--surface:#141414;--surface2:#1b1b1b;
+      --border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.13);
+      --text:#eeebe6;--text-2:rgba(238,235,230,0.52);--text-3:rgba(238,235,230,0.28);
+      --accent:#ff5a00;--accent-dim:rgba(255,90,0,0.1);--accent-dim2:rgba(255,90,0,0.05);
+      --green:#22c55e;--green-dim:rgba(34,197,94,0.09);--red:#ef4444;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;-webkit-font-smoothing:antialiased;overflow:hidden;}
+
+    /* LOCK */
+    #lock{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;}
+    #lock.hidden{display:none;}
+    .lock-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;}
+    .lock-sub{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);}
+    .lock-form{display:flex;flex-direction:column;gap:0.75rem;width:280px;}
+    .lock-input{background:var(--surface);border:1px solid var(--border-light);padding:0.85rem 1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;letter-spacing:0.1em;outline:none;text-align:center;transition:border-color 0.15s;}
+    .lock-input:focus{border-color:var(--accent);}
+    .lock-input::placeholder{color:var(--text-3);letter-spacing:0.05em;}
+    .lock-btn{background:var(--accent);color:#0c0c0c;border:none;padding:0.85rem;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;}
+    .lock-btn:hover{opacity:0.88;}
+    .lock-error{font-size:0.75rem;color:var(--red);text-align:center;display:none;}
+    .lock-error.show{display:block;}
+
+    /* SHELL */
+    #app{display:grid;grid-template-columns:280px 1fr;height:100vh;}
+
+    /* SIDEBAR */
+    .sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+    .sidebar-top{padding:1.75rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .logo-mark{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.04em;line-height:1;}
+    .logo-sub{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-top:0.2rem;}
+    .steps-nav{padding:1.25rem 1rem;}
+    .step-item{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;cursor:pointer;transition:background 0.15s;border-radius:2px;}
+    .step-item:hover{background:var(--surface);}
+    .step-item.active{background:var(--accent-dim);}
+    .step-dot{width:7px;height:7px;border-radius:50%;border:1px solid var(--border-light);flex-shrink:0;transition:all 0.2s;}
+    .step-item.active .step-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px rgba(255,90,0,0.4);}
+    .step-item.done .step-dot{background:var(--green);border-color:var(--green);}
+    .step-label{font-size:0.8rem;color:var(--text-2);}
+    .step-item.active .step-label,.step-item.done .step-label{color:var(--text);}
+    .step-tag{font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--text-3);margin-left:auto;}
+    .step-item.done .step-tag{color:var(--green);}
+    .step-item.active .step-tag{color:var(--accent);}
+    .cfg-section{padding:1.25rem 1.75rem;border-top:1px solid var(--border);margin-top:auto;flex-shrink:0;}
+    .cfg-title{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;}
+    .cfg-field{margin-bottom:0.65rem;}
+    .cfg-label{font-size:0.65rem;color:var(--text-3);margin-bottom:0.3rem;}
+    .cfg-input{width:100%;background:var(--surface2);border:1px solid var(--border);padding:0.4rem 0.6rem;color:var(--text);font-family:'DM Mono',monospace;font-size:0.65rem;outline:none;transition:border-color 0.15s;}
+    .cfg-input:focus{border-color:var(--accent);}
+    .cfg-input::placeholder{color:var(--text-3);}
+    .cfg-save{width:100%;background:transparent;border:1px solid var(--border-light);color:var(--text-2);padding:0.5rem;font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;margin-top:0.5rem;}
+    .cfg-save:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* MAIN */
+    .main{display:grid;grid-template-rows:auto 1fr;height:100vh;overflow:hidden;}
+    .topbar{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.04em;}
+    .status-badge{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.3rem 0.75rem;border:1px solid var(--border);color:var(--text-3);display:flex;align-items:center;gap:0.4rem;}
+    .status-dot{width:5px;height:5px;border-radius:50%;background:var(--text-3);}
+    .status-badge.generating{border-color:rgba(255,90,0,0.3);color:var(--accent);}
+    .status-badge.generating .status-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite;}
+    .status-badge.live{border-color:rgba(34,197,94,0.3);color:var(--green);}
+    .status-badge.live .status-dot{background:var(--green);}
+    .status-badge.error{border-color:rgba(239,68,68,0.3);color:var(--red);}
+    .status-badge.error .status-dot{background:var(--red);}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+    /* CONTENT AREA */
+    .content-area{display:grid;grid-template-columns:1fr;overflow:hidden;height:100%;}
+    .content-area.with-preview{grid-template-columns:420px 1fr;}
+
+    /* FORM PANE */
+    .form-pane{overflow-y:auto;padding:2rem 2.5rem;}
+    .panel{display:none;}
+    .panel.active{display:block;}
+    .panel-eyebrow{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem;}
+    .panel-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.03em;line-height:1;margin-bottom:0.4rem;}
+    .panel-desc{font-size:0.825rem;color:var(--text-2);line-height:1.7;margin-bottom:2rem;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+    .field{display:flex;flex-direction:column;gap:0.4rem;}
+    .field.full{grid-column:1/-1;}
+    .field-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);}
+    .field-input,.field-select,.field-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.7rem 0.9rem;color:var(--text);font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;}
+    .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
+    .field-input::placeholder,.field-textarea::placeholder{color:var(--text-3);}
+    .field-select{appearance:none;cursor:pointer;}
+    .field-textarea{resize:vertical;min-height:130px;line-height:1.7;}
+    .field-textarea.tall{min-height:200px;}
+    .granola-hint{background:var(--accent-dim2);border:1px dashed rgba(255,90,0,0.18);padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.6rem;}
+    .granola-hint-icon{font-size:0.7rem;color:var(--accent);flex-shrink:0;font-family:'DM Mono',monospace;}
+    .granola-hint-text{font-size:0.75rem;color:var(--text-2);line-height:1.6;}
+    .actions{display:flex;gap:0.75rem;margin-top:1.5rem;align-items:center;}
+    .btn{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.8rem 1.5rem;border:none;cursor:pointer;transition:all 0.15s;}
+    .btn-primary{background:var(--accent);color:#0c0c0c;}
+    .btn-primary:hover:not(:disabled){opacity:0.88;}
+    .btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
+    .btn-ghost{background:transparent;border:1px solid var(--border-light);color:var(--text-2);}
+    .btn-ghost:hover{border-color:var(--text-2);color:var(--text);}
+
+    /* LOADING */
+    .gen-loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:1.25rem;text-align:center;}
+    .gen-loading.show{display:flex;}
+    .spinner{width:28px;height:28px;border:1px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .gen-label{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-2);}
+    .gen-sub{font-size:0.75rem;color:var(--text-3);}
+
+    /* RESULT */
+    .result-block{display:none;}
+    .result-block.show{display:block;}
+    .url-card{padding:1.25rem 1.5rem;background:var(--green-dim);border:1px solid rgba(34,197,94,0.18);margin-bottom:1.5rem;transition:background 0.4s;}
+    .url-card.flash{background:rgba(34,197,94,0.22);}
+    .url-card-label{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;}
+    .url-val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);word-break:break-all;cursor:pointer;padding:0.6rem 0.85rem;background:var(--surface);border:1px solid var(--border-light);transition:border-color 0.15s;}
+    .url-val:hover{border-color:var(--green);}
+    .url-hint{font-size:0.68rem;color:var(--text-3);margin-top:0.4rem;}
+    .url-actions{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
+
+    /* FEEDBACK */
+    .feedback-block{margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid var(--border);}
+    .fb-eyebrow{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-3);margin-bottom:0.3rem;}
+    .fb-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;margin-bottom:0.4rem;}
+    .fb-desc{font-size:0.78rem;color:var(--text-2);line-height:1.6;margin-bottom:1.25rem;}
+    .fb-history{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;}
+    .fb-item{padding:0.7rem 0.9rem;background:var(--surface2);border-left:2px solid var(--green);font-size:0.75rem;color:var(--text-2);line-height:1.5;}
+    .fb-item-meta{font-family:'DM Mono',monospace;font-size:0.52rem;color:var(--green);margin-bottom:0.25rem;}
+    .fb-examples{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.75rem;}
+    .fb-chip{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.05em;padding:0.28rem 0.6rem;background:var(--surface2);border:1px solid var(--border);color:var(--text-3);cursor:pointer;transition:all 0.15s;}
+    .fb-chip:hover{border-color:var(--accent);color:var(--accent);}
+    .fb-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.75rem 0.9rem;color:var(--text);font-family:'Inter',sans-serif;font-size:0.825rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;resize:vertical;min-height:85px;line-height:1.7;}
+    .fb-textarea:focus{border-color:var(--accent);}
+    .fb-textarea::placeholder{color:var(--text-3);}
+
+    /* LOG */
+    .log-block{margin-top:1.5rem;}
+    .log-title{font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:0.5rem;}
+    .log-lines{display:flex;flex-direction:column;gap:0.25rem;}
+    .log-line{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-3);display:flex;gap:0.6rem;}
+    .log-line.ok{color:var(--green);}
+    .log-line.err{color:var(--red);}
+    .log-line.info{color:var(--accent);}
+    .log-time{opacity:0.5;flex-shrink:0;}
+
+    /* PREVIEW */
+    .preview-pane{display:none;border-left:1px solid var(--border);flex-direction:column;height:100%;overflow:hidden;}
+    .preview-pane.show{display:flex;}
+    .preview-topbar{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .preview-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);}
+    .preview-badge{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;padding:0.2rem 0.5rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);color:var(--accent);}
+    .preview-frame{flex:1;width:100%;border:none;background:#fff;}
+
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--border-light);}
+  </style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div style="text-align:center;">
+    <div class="lock-logo">Digital Plane</div>
+    <div class="lock-sub">Proposal Engine</div>
+  </div>
+  <div class="lock-form">
+    <input type="password" class="lock-input" id="lock-input" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()" />
+    <button class="lock-btn" onclick="unlock()">Entrar</button>
+    <div class="lock-error" id="lock-error">Password incorrecta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo-mark">Digital Plane</div>
+      <div class="logo-sub">Proposal Engine</div>
+    </div>
+    <nav class="steps-nav">
+      <div class="step-item active" data-step="1" onclick="goStep(1)"><div class="step-dot"></div><span class="step-label">Cliente</span><span class="step-tag">01</span></div>
+      <div class="step-item" data-step="2" onclick="goStep(2)"><div class="step-dot"></div><span class="step-label">Notas da Reunião</span><span class="step-tag">02</span></div>
+      <div class="step-item" data-step="3" onclick="goStep(3)"><div class="step-dot"></div><span class="step-label">Oferta & Preço</span><span class="step-tag">03</span></div>
+      <div class="step-item" data-step="4" onclick="goStep(4)"><div class="step-dot"></div><span class="step-label">Gerar & Deploy</span><span class="step-tag">04</span></div>
+    </nav>
+    <div class="cfg-section">
+      <div class="cfg-title">Configuração</div>
+      <div class="cfg-field"><div class="cfg-label">Anthropic API Key</div><input type="password" class="cfg-input" id="cfg-anthropic" placeholder="sk-ant-..." /></div>
+      <div class="cfg-field"><div class="cfg-label">GitHub Token</div><input type="password" class="cfg-input" id="cfg-github" placeholder="ghp_..." /></div>
+      <div class="cfg-field"><div class="cfg-label">GitHub Repo (user/repo)</div><input type="text" class="cfg-input" id="cfg-repo" placeholder="tomas/dp-proposals" /></div>
+      <div class="cfg-field"><div class="cfg-label">Base URL das Propostas</div><input type="text" class="cfg-input" id="cfg-baseurl" placeholder="https://proposals.digitalplane.pt" /></div>
+      <div class="cfg-field"><div class="cfg-label">Make Webhook (aceite)</div><input type="text" class="cfg-input" id="cfg-webhook" placeholder="https://hook.eu1.make.com/..." /></div>
+      <button class="cfg-save" onclick="saveCfg()">Guardar Configuração</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Nova Proposta</div>
+      <div class="status-badge" id="status-badge"><div class="status-dot"></div><span id="status-text">Pronto</span></div>
+    </div>
+
+    <div class="content-area" id="content-area">
+      <div class="form-pane">
+
+        <!-- STEP 1 -->
+        <div class="panel active" id="panel-1">
+          <div class="panel-eyebrow">Passo 01</div>
+          <div class="panel-title">Dados do Cliente</div>
+          <div class="panel-desc">Informação básica sobre quem recebe a proposta.</div>
+          <div class="form-grid">
+            <div class="field"><label class="field-label">Nome *</label><input type="text" class="field-input" id="client-name" placeholder="Ricardo Matos" /></div>
+            <div class="field"><label class="field-label">Empresa</label><input type="text" class="field-input" id="client-company" placeholder="Pireza" /></div>
+            <div class="field"><label class="field-label">Email</label><input type="email" class="field-input" id="client-email" placeholder="ricardo@pireza.pt" /></div>
+            <div class="field"><label class="field-label">Setor</label><input type="text" class="field-input" id="client-sector" placeholder="Imobiliário, SaaS..." /></div>
+          </div>
+          <div class="actions"><button class="btn btn-primary" onclick="goStep(2)">Seguinte →</button></div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="panel" id="panel-2">
+          <div class="panel-eyebrow">Passo 02</div>
+          <div class="panel-title">Notas da Reunião</div>
+          <div class="panel-desc">Cola o resumo do Granola. Claude extrai o contexto e a linguagem do cliente.</div>
+          <div class="granola-hint"><span class="granola-hint-icon">◎</span><span class="granola-hint-text">Mid-call pede um resumo ao Granola e cola aqui. Quanto mais detalhe, melhor o output.</span></div>
+          <div class="field" style="margin-bottom:1rem;"><label class="field-label">Resumo do Granola *</label><textarea class="field-textarea tall" id="granola-notes" placeholder="Cola aqui o resumo gerado pelo Granola..."></textarea></div>
+          <div class="field"><label class="field-label">Contexto adicional (opcional)</label><textarea class="field-textarea" id="extra-context" placeholder="Tom da conversa, objeções, detalhes que o Granola pode não ter captado..."></textarea></div>
+          <div class="actions"><button class="btn btn-ghost" onclick="goStep(1)">← Voltar</button><button class="btn btn-primary" onclick="goStep(3)">Seguinte →</button></div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="panel" id="panel-3">
+          <div class="panel-eyebrow">Passo 03</div>
+          <div class="panel-title">Oferta & Investimento</div>
+          <div class="panel-desc">Define o que está a ser proposto e as condições comerciais.</div>
+          <div class="form-grid">
+            <div class="field"><label class="field-label">Nome da Oferta *</label><input type="text" class="field-input" id="offer-name" placeholder="Content Accelerator" /></div>
+            <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="offer-duration" placeholder="3 meses" /></div>
+            <div class="field"><label class="field-label">Preço *</label><input type="text" class="field-input" id="offer-price" placeholder="4.800" /></div>
+            <div class="field"><label class="field-label">Moeda</label><select class="field-select" id="offer-currency"><option value="€">€ EUR</option><option value="AED">AED</option><option value="$">$ USD</option><option value="£">£ GBP</option></select></div>
+            <div class="field"><label class="field-label">Pagamento</label><input type="text" class="field-input" id="offer-payment" placeholder="50% entrada · 50% no 2.º mês" /></div>
+            <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start" placeholder="Mediante acordo" /></div>
+            <div class="field full"><label class="field-label">Entregáveis (um por linha)</label><textarea class="field-textarea" id="offer-deliverables" placeholder="Sessão de estratégia&#10;8 vídeos curtos/mês&#10;2 vídeos longos/mês&#10;VSL de conversão&#10;Follow-up mensal"></textarea></div>
+          </div>
+          <div class="actions"><button class="btn btn-ghost" onclick="goStep(2)">← Voltar</button><button class="btn btn-primary" onclick="goStep(4)">Seguinte →</button></div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="panel" id="panel-4">
+          <div class="panel-eyebrow">Passo 04</div>
+          <div class="panel-title">Gerar & Deploy</div>
+          <div class="panel-desc">Um clique. Claude gera o copy, injeta no template e a proposta fica live.</div>
+
+          <div id="idle-state">
+            <button class="btn btn-primary" onclick="runPipeline()">Gerar & Publicar Proposta</button>
+            <div class="actions" style="margin-top:0.5rem;"><button class="btn btn-ghost" onclick="goStep(3)">← Rever Oferta</button></div>
+          </div>
+
+          <div class="gen-loading" id="loading-state">
+            <div class="spinner"></div>
+            <div><div class="gen-label" id="loading-label">A gerar...</div><div class="gen-sub" id="loading-sub"></div></div>
+          </div>
+
+          <div class="result-block" id="result-block">
+            <div class="url-card" id="url-card">
+              <div class="url-card-label">✓ Proposta publicada</div>
+              <div class="url-val" id="proposal-url" onclick="copyUrl()">—</div>
+              <div class="url-hint">Clica para copiar</div>
+              <div class="url-actions">
+                <button class="btn btn-primary" onclick="openProposal()">Abrir ↗</button>
+                <button class="btn btn-ghost" onclick="copyUrl()">Copiar Link</button>
+                <button class="btn btn-ghost" onclick="location.reload()">Nova Proposta</button>
+              </div>
+            </div>
+
+            <div class="feedback-block">
+              <div class="fb-eyebrow">Revisão</div>
+              <div class="fb-title">Algo a Ajustar?</div>
+              <div class="fb-desc">Diz o que queres mudar. Claude ajusta e republica — a URL mantém-se. A preview actualiza em tempo real.</div>
+              <div class="fb-history" id="fb-history"></div>
+              <div class="fb-examples">
+                <span class="fb-chip" onclick="setFb(this)">Tom demasiado formal</span>
+                <span class="fb-chip" onclick="setFb(this)">Quote do cliente não está certa</span>
+                <span class="fb-chip" onclick="setFb(this)">Mais urgência no investimento</span>
+                <span class="fb-chip" onclick="setFb(this)">Simplifica os entregáveis</span>
+                <span class="fb-chip" onclick="setFb(this)">Desafio mais específico</span>
+              </div>
+              <textarea class="fb-textarea" id="fb-input" placeholder="Ex: A secção do desafio não captura bem o problema principal. Ele mencionou que o maior problema é a falta de leads qualificados. Ajusta e torna o tom mais direto..."></textarea>
+              <div class="actions" style="margin-top:0.75rem;">
+                <button class="btn btn-primary" id="fb-btn" onclick="applyFeedback()">Aplicar & Republicar</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('fb-input').value=''">Limpar</button>
+              </div>
+            </div>
+
+            <div class="log-block" id="log-block" style="display:none;">
+              <div class="log-title">Log</div>
+              <div class="log-lines" id="log-lines"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-pane" id="preview-pane">
+        <div class="preview-topbar">
+          <span class="preview-label">Pré-visualização</span>
+          <span class="preview-badge" id="preview-version">v1</span>
+        </div>
+        <iframe class="preview-frame" id="preview-frame"></iframe>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const APP_PASSWORD = 'simba';
+
+function unlock() {
+  if (document.getElementById('lock-input').value === APP_PASSWORD) {
+    document.getElementById('lock').classList.add('hidden');
+    loadCfg();
+  } else {
+    document.getElementById('lock-error').classList.add('show');
+    document.getElementById('lock-input').value = '';
+    document.getElementById('lock-input').focus();
+  }
+}
+
+const S = { proposalUrl:null, generatedHTML:null, currentContent:null, inputs:null, revisionCount:0, feedbackHistory:[] };
+
+function saveCfg() {
+  ['anthropic','github','repo','baseurl','webhook'].forEach(k => localStorage.setItem('dp_'+k, document.getElementById('cfg-'+k).value.trim()));
+  const btn = document.querySelector('.cfg-save');
+  btn.textContent = 'Guardado ✓';
+  setTimeout(() => btn.textContent = 'Guardar Configuração', 2000);
+}
+
+function loadCfg() {
+  ['anthropic','github','repo','baseurl','webhook'].forEach(k => {
+    const el = document.getElementById('cfg-'+k);
+    if (el) el.value = localStorage.getItem('dp_'+k) || '';
+  });
+}
+
+function cfg(k) { return localStorage.getItem('dp_'+k) || ''; }
+
+function goStep(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  document.querySelectorAll('.step-item').forEach(s => {
+    const sn = parseInt(s.dataset.step);
+    s.classList.toggle('active', sn===n);
+    s.classList.toggle('done', sn<n);
+    s.querySelector('.step-tag').textContent = sn<n ? '✓' : '0'+sn;
+  });
+}
+
+function setStatus(state, text) {
+  document.getElementById('status-badge').className = 'status-badge '+state;
+  document.getElementById('status-text').textContent = text;
+}
+
+function log(msg, type) {
+  document.getElementById('log-block').style.display = 'block';
+  const t = new Date().toLocaleTimeString('pt-PT');
+  const line = document.createElement('div');
+  line.className = 'log-line '+(type||'');
+  line.innerHTML = `<span class="log-time">${t}</span><span>${msg}</span>`;
+  document.getElementById('log-lines').appendChild(line);
+}
+
+function showLoading(label, sub) {
+  document.getElementById('idle-state').style.display = 'none';
+  document.getElementById('result-block').classList.remove('show');
+  document.getElementById('loading-state').classList.add('show');
+  document.getElementById('loading-label').textContent = label||'A gerar...';
+  document.getElementById('loading-sub').textContent = sub||'';
+}
+
+function hideLoading() { document.getElementById('loading-state').classList.remove('show'); }
+
+function updatePreview(html, v) {
+  document.getElementById('preview-pane').classList.add('show');
+  document.getElementById('content-area').classList.add('with-preview');
+  const blob = new Blob([html], {type:'text/html'});
+  document.getElementById('preview-frame').src = URL.createObjectURL(blob);
+  document.getElementById('preview-version').textContent = 'v'+v;
+}
+
+function ensureHttps(url) { return url && !url.startsWith('http') ? 'https://'+url : url; }
+
+function copyUrl() {
+  if (!S.proposalUrl) return;
+  navigator.clipboard.writeText(S.proposalUrl);
+  const el = document.getElementById('proposal-url');
+  const orig = el.textContent;
+  el.textContent = 'Copiado!';
+  setTimeout(() => el.textContent = orig, 1500);
+}
+
+function openProposal() {
+  if (!S.proposalUrl) return;
+  window.open(ensureHttps(S.proposalUrl), '_blank');
+}
+
+function showResult(url) {
+  hideLoading();
+  document.getElementById('idle-state').style.display = 'none';
+  document.getElementById('result-block').classList.add('show');
+  document.getElementById('proposal-url').textContent = url;
+  S.proposalUrl = url;
+  setStatus('live', 'Live ✓');
+}
+
+function flashUrlCard() {
+  const c = document.getElementById('url-card');
+  c.classList.add('flash');
+  setTimeout(() => c.classList.remove('flash'), 600);
+}
+
+function slugify(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+}
+
+function today() { return new Date().toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric'}); }
+function expiry() { const d=new Date(); d.setDate(d.getDate()+14); return d.toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric'}); }
+
+function collectInputs() {
+  return {
+    clientName: document.getElementById('client-name').value.trim(),
+    clientCompany: document.getElementById('client-company').value.trim(),
+    clientSector: document.getElementById('client-sector').value.trim(),
+    granolaNotes: document.getElementById('granola-notes').value.trim(),
+    extraContext: document.getElementById('extra-context').value.trim(),
+    offerName: document.getElementById('offer-name').value.trim(),
+    offerDuration: document.getElementById('offer-duration').value.trim(),
+    offerPrice: document.getElementById('offer-price').value.trim(),
+    offerCurrency: document.getElementById('offer-currency').value,
+    offerPayment: document.getElementById('offer-payment').value.trim(),
+    offerStart: document.getElementById('offer-start').value.trim(),
+    offerDeliverables: document.getElementById('offer-deliverables').value.trim(),
+  };
+}
+
+async function callClaude(inputs) {
+  const prompt = `És o assistente de propostas da Digital Plane, uma agência de conteúdo estratégico premium baseada em Lisboa e Dubai.
+
+Gera o conteúdo para uma proposta comercial em Português de Portugal (PT-PT, nunca PT-BR).
+Tom: direto, inteligente, premium. Escreve como Tomás Cardoso — estratégico, confiante, elegante.
+
+DADOS:
+- Cliente: ${inputs.clientName} (${inputs.clientCompany||''})
+- Setor: ${inputs.clientSector||'não especificado'}
+- Oferta: ${inputs.offerName} — ${inputs.offerCurrency}${inputs.offerPrice}
+- Duração: ${inputs.offerDuration||'3 meses'}
+- Pagamento: ${inputs.offerPayment||'50% entrada · 50% no início do 2.º mês'}
+- Entregáveis: ${inputs.offerDeliverables||'a definir'}
+
+RESUMO DA REUNIÃO:
+${inputs.granolaNotes}
+${inputs.extraContext?'\nCONTEXTO ADICIONAL:\n'+inputs.extraContext:''}
+
+Responde APENAS com JSON válido (sem markdown, sem backticks):
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"<p>...</p><p>...</p>","approach_body":"<p>...</p>","deliverables":[{"num":"01","name":"...","desc":"..."}],"timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],"investment_context":"...","start_date":"..."}
+
+3-5 entregáveis, 4-5 fases. Adapta ao contexto específico desta call.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':cfg('anthropic'),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]}),
+  });
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(`Claude ${res.status}: ${e.error?.message||'Erro'}`); }
+  const data = await res.json();
+  const text = data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+  return JSON.parse(text);
+}
+
+async function callClaudeRevision(inputs, current, feedback, history) {
+  const histText = history.length ? '\nREVISÕES ANTERIORES:\n'+history.map((h,i)=>`${i+1}. ${h}`).join('\n') : '';
+  const prompt = `És o assistente de propostas da Digital Plane. Revê esta proposta com base no feedback. PT-PT, tom premium.
+
+DADOS: ${inputs.clientName} · ${inputs.offerName} · ${inputs.offerCurrency}${inputs.offerPrice}
+REUNIÃO: ${inputs.granolaNotes.substring(0,500)}...
+
+CONTEÚDO ATUAL:
+${JSON.stringify(current,null,2)}
+${histText}
+
+FEEDBACK: "${feedback}"
+
+Aplica apenas o que o feedback pede. Mantém tudo o resto.
+Responde APENAS com JSON completo actualizado (sem markdown):
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_context":"...","start_date":"..."}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':cfg('anthropic'),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]}),
+  });
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(`Claude ${res.status}: ${e.error?.message||'Erro'}`); }
+  const data = await res.json();
+  const text = data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+  return JSON.parse(text);
+}
+
+function buildHTML(inputs, content) {
+  const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join('');
+  const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join('');
+  const webhook = cfg('webhook')||'https://hook.eu1.make.com/placeholder';
+  return PROPOSAL_TEMPLATE
+    .replace(/{{CLIENT_NAME}}/g,inputs.clientName).replace(/{{OFFER_NAME}}/g,inputs.offerName)
+    .replace(/{{PROPOSAL_DATE}}/g,today()).replace(/{{EXPIRY_DATE}}/g,expiry())
+    .replace(/{{CURRENCY}}/g,inputs.offerCurrency).replace(/{{PRICE}}/g,inputs.offerPrice)
+    .replace(/{{DURATION}}/g,inputs.offerDuration||'3 meses')
+    .replace(/{{PAYMENT_STRUCTURE}}/g,inputs.offerPayment||'50% entrada · 50% no início do 2.º mês')
+    .replace(/{{START_DATE}}/g,content.start_date||inputs.offerStart||'Mediante acordo')
+    .replace(/{{HERO_SUBTITLE}}/g,content.hero_subtitle).replace(/{{CHALLENGE_QUOTE}}/g,content.challenge_quote)
+    .replace(/{{CHALLENGE_BODY}}/g,content.challenge_body).replace(/{{APPROACH_BODY}}/g,content.approach_body)
+    .replace(/{{DELIVERABLES_HTML}}/g,delivHTML).replace(/{{TIMELINE_HTML}}/g,timeHTML)
+    .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context).replace(/{{MAKE_WEBHOOK_URL}}/g,webhook);
+}
+
+async function pushToGitHub(filename, html) {
+  const token=cfg('github'), repo=cfg('repo');
+  if (!token||!repo) throw new Error('GitHub não configurado');
+  const path=`proposals/${filename}`;
+  const content=btoa(unescape(encodeURIComponent(html)));
+  const apiUrl=`https://api.github.com/repos/${repo}/contents/${path}`;
+  let sha;
+  try { const c=await fetch(apiUrl,{headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}}); if(c.ok) sha=(await c.json()).sha; } catch(e){}
+  const res=await fetch(apiUrl,{method:'PUT',headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({message:`Proposta: ${filename.replace('.html','')}`,content,...(sha?{sha}:{})})});
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(`GitHub ${res.status}: ${e.message}`); }
+}
+
+async function runPipeline() {
+  if (!cfg('anthropic')) { alert('Falta a Anthropic API Key.'); return; }
+  S.inputs = collectInputs();
+  if (!S.inputs.clientName) { alert('Nome do cliente é obrigatório.'); goStep(1); return; }
+  if (!S.inputs.granolaNotes) { alert('Cola o resumo do Granola.'); goStep(2); return; }
+  if (!S.inputs.offerName||!S.inputs.offerPrice) { alert('Oferta e preço são obrigatórios.'); goStep(3); return; }
+
+  const slug=slugify(S.inputs.clientName+'-'+S.inputs.offerName);
+  const filename=slug+'.html';
+  document.getElementById('log-lines').innerHTML='';
+  document.getElementById('log-block').style.display='none';
+
+  showLoading('A gerar conteúdo...','Claude está a analisar a reunião');
+  setStatus('generating','A gerar...');
+  log('Contexto validado ✓','info');
+
+  try {
+    S.currentContent = await callClaude(S.inputs);
+    log('Conteúdo gerado ✓','ok');
+  } catch(e) {
+    hideLoading(); document.getElementById('idle-state').style.display='block';
+    setStatus('error','Erro'); log('Erro Claude: '+e.message,'err'); return;
+  }
+
+  showLoading('A montar proposta...','A injetar conteúdo no template');
+  try {
+    S.generatedHTML = buildHTML(S.inputs, S.currentContent);
+    S.revisionCount=0; S.feedbackHistory=[]; renderFbHistory();
+    log('HTML pronto ✓','ok');
+  } catch(e) {
+    hideLoading(); document.getElementById('idle-state').style.display='block';
+    setStatus('error','Erro'); log('Erro HTML: '+e.message,'err'); return;
+  }
+
+  updatePreview(S.generatedHTML, 1);
+
+  showLoading('A publicar...','A fazer push para GitHub');
+  try { await pushToGitHub(filename, S.generatedHTML); log('Publicado ✓','ok'); }
+  catch(e) { log('Aviso GitHub: '+e.message,'err'); }
+
+  let base=cfg('baseurl').replace(/\/$/,'');
+  if (base && !base.startsWith('http')) base='https://'+base;
+  if (!base) base=`https://${cfg('repo').split('/')[0]}.github.io/${cfg('repo').split('/')[1]||'proposals'}`;
+  const url=`${base}/proposals/${filename}`;
+  log('URL: '+url,'ok');
+
+  document.getElementById('page-title').textContent=S.inputs.clientName+' — '+S.inputs.offerName;
+  showResult(url);
+}
+
+function setFb(el) { document.getElementById('fb-input').value=el.textContent; document.getElementById('fb-input').focus(); }
+
+function renderFbHistory() {
+  const c=document.getElementById('fb-history');
+  c.innerHTML='';
+  S.feedbackHistory.forEach((fb,i)=>{
+    const el=document.createElement('div');
+    el.className='fb-item';
+    el.innerHTML=`<div class="fb-item-meta">Revisão ${i+1} · aplicada</div>${fb}`;
+    c.appendChild(el);
+  });
+}
+
+async function applyFeedback() {
+  const feedback=document.getElementById('fb-input').value.trim();
+  if (!feedback) { alert('Escreve o que queres ajustar.'); return; }
+  if (!S.currentContent||!S.inputs) { alert('Gera primeiro uma proposta.'); return; }
+
+  const btn=document.getElementById('fb-btn');
+  btn.disabled=true; btn.textContent='A aplicar...';
+  setStatus('generating','A rever...');
+
+  const slug=slugify(S.inputs.clientName+'-'+S.inputs.offerName);
+  log(`Revisão ${S.revisionCount+1}: "${feedback.substring(0,50)}..."`, 'info');
+
+  try {
+    const updated=await callClaudeRevision(S.inputs, S.currentContent, feedback, S.feedbackHistory);
+    log('Revisão gerada ✓','ok');
+    S.currentContent=updated;
+    S.generatedHTML=buildHTML(S.inputs, S.currentContent);
+
+    try { await pushToGitHub(slug+'.html', S.generatedHTML); log('Republicado ✓','ok'); }
+    catch(e) { log('Aviso GitHub: '+e.message,'err'); }
+
+    S.revisionCount++;
+    S.feedbackHistory.push(feedback);
+    renderFbHistory();
+    updatePreview(S.generatedHTML, S.revisionCount+1);
+    flashUrlCard();
+    document.getElementById('fb-input').value='';
+    setStatus('live','Live ✓');
+    log(`v${S.revisionCount+1} publicada`,'ok');
+  } catch(e) {
+    log('Erro revisão: '+e.message,'err');
+    setStatus('error','Erro na revisão');
+  }
+
+  btn.disabled=false; btn.textContent='Aplicar & Republicar';
+}
+
+const PROPOSAL_TEMPLATE=`<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Proposta — {{CLIENT_NAME}} \xd7 Digital Plane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+:root{--black:#0a0a0a;--surface:#161616;--border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.12);--text-primary:#f0ede8;--text-secondary:rgba(240,237,232,0.5);--text-muted:rgba(240,237,232,0.28);--accent:#ff5a00;--accent-dim:rgba(255,90,0,0.12);--accent-dim2:rgba(255,90,0,0.05);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
+body{background-color:var(--black);color:var(--text-primary);font-family:'Inter',sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.6;}
+#progress{position:fixed;top:0;left:0;height:1px;background:var(--accent);width:0%;transition:width 0.1s linear;z-index:999;}
+.hero{min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding:0;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(255,90,0,0.04) 0%,transparent 60%),linear-gradient(180deg,#0a0a0a 0%,#0d0d0d 100%);}
+.hero-line-v{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
+.hero-line-v:nth-child(1){left:8.33%;}.hero-line-v:nth-child(2){left:50%;}.hero-line-v:nth-child(3){right:8.33%;}
+.hero-nav{position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:2rem 4rem;border-bottom:1px solid var(--border);}
+.logo{font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-secondary);}
+.nav-meta{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;}
+.hero-content{position:relative;z-index:10;display:flex;flex-direction:column;justify-content:center;padding:6rem 4rem;max-width:1100px;}
+.proposal-tag{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:2.5rem;display:flex;align-items:center;gap:1rem;}
+.proposal-tag::before{content:'';display:block;width:2rem;height:1px;background:var(--accent);}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7.5rem);letter-spacing:0.02em;line-height:0.95;margin-bottom:3rem;}
+.hero-title em{font-style:italic;color:var(--accent);}
+.hero-subtitle{font-size:1rem;color:var(--text-secondary);max-width:480px;line-height:1.8;font-weight:300;}
+.hero-footer{position:relative;z-index:10;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
+.hero-stat{padding:1.75rem 4rem;border-right:1px solid var(--border);}.hero-stat:last-child{border-right:none;}
+.stat-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.5rem;}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;color:var(--text-primary);}
+section{padding:7rem 4rem;border-bottom:1px solid var(--border);position:relative;}
+.section-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:4rem;display:flex;align-items:center;gap:1rem;}
+.section-label::before{content:attr(data-num);color:var(--text-muted);}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,4vw,3.5rem);letter-spacing:0.02em;line-height:1.1;margin-bottom:2.5rem;max-width:700px;}
+.section-title em{font-style:italic;color:var(--accent);}
+.section-body{font-size:1rem;color:var(--text-secondary);max-width:620px;line-height:1.9;}
+.section-body p+p{margin-top:1.25rem;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
+.challenge-quote{border-left:1px solid var(--accent);padding:2rem 2.5rem;margin:1rem 0;background:var(--accent-dim2);}
+.challenge-quote p{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:300;font-style:italic;line-height:1.8;color:var(--text-primary);}
+.deliverables-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:4rem;}
+.deliverable-item{background:var(--black);padding:2.5rem;transition:background 0.3s;}
+.deliverable-item:hover{background:var(--surface);}
+.deliverable-num{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);margin-bottom:1.25rem;}
+.deliverable-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;margin-bottom:0.75rem;}
+.deliverable-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
+.timeline{margin-top:4rem;position:relative;}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--accent) 0%,var(--border) 100%);}
+.timeline-item{padding:0 0 3.5rem 3rem;position:relative;}
+.timeline-item::before{content:'';position:absolute;left:-3px;top:8px;width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.timeline-item:last-child{padding-bottom:0;}
+.timeline-phase{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:0.5rem;}
+.timeline-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.5rem;}
+.timeline-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
+.investment-section{background:var(--surface);}
+.investment-card{border:1px solid var(--border-light);padding:4rem;max-width:700px;position:relative;overflow:hidden;}
+.investment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+.investment-price{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.5rem);letter-spacing:0.02em;line-height:1;margin:1.5rem 0;}
+.investment-price sup{font-size:0.35em;vertical-align:super;color:var(--accent);font-family:'DM Mono',monospace;}
+.investment-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--text-muted);text-transform:uppercase;}
+.investment-terms{margin-top:2.5rem;padding-top:2.5rem;border-top:1px solid var(--border);}
+.term-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.875rem;}
+.term-row:last-child{border-bottom:none;}
+.term-key{color:var(--text-muted);}.term-val{color:var(--text-primary);font-weight:400;}
+.accept-section{background:var(--black);}.accept-inner{max-width:640px;}
+.accept-form{margin-top:3.5rem;display:flex;flex-direction:column;gap:1.5rem;}
+.field-group{display:flex;flex-direction:column;gap:0.5rem;}
+.field-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.field-input{background:transparent;border:none;border-bottom:1px solid var(--border-light);padding:0.75rem 0;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:1rem;font-weight:300;outline:none;transition:border-color 0.2s;width:100%;}
+.field-input:focus{border-color:var(--accent);}
+.field-input::placeholder{color:var(--text-muted);}
+.checkbox-group{display:flex;align-items:flex-start;gap:1rem;cursor:pointer;}
+.checkbox-group input[type="checkbox"]{display:none;}
+.checkbox-custom{width:18px;height:18px;border:1px solid var(--border-light);flex-shrink:0;margin-top:3px;position:relative;transition:all 0.2s;}
+.checkbox-group input:checked+.checkbox-custom{background:var(--accent);border-color:var(--accent);}
+.checkbox-group input:checked+.checkbox-custom::after{content:'';position:absolute;inset:3px;background:var(--black);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);}
+.checkbox-text{font-size:0.875rem;color:var(--text-secondary);line-height:1.6;}
+.btn-accept{margin-top:1rem;background:var(--accent);color:var(--black);border:none;padding:1.25rem 3rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s,transform 0.2s;align-self:flex-start;}
+.btn-accept:hover{opacity:0.85;transform:translateY(-1px);}
+.btn-accept:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+.success-message{display:none;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.3);padding:2rem 2.5rem;margin-top:2rem;}
+.success-message.show{display:block;}
+.success-message p{font-size:1rem;font-style:italic;}
+footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);}
+.footer-logo,.footer-meta{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+@media(max-width:768px){.hero-nav,.hero-content{padding:1.5rem;}section{padding:4rem 1.5rem;}.hero-footer{grid-template-columns:1fr;}.hero-stat{padding:1.25rem 1.5rem;border-right:none;border-bottom:1px solid var(--border);}.two-col{grid-template-columns:1fr;gap:3rem;}.investment-card{padding:2rem;}footer{padding:1.5rem;flex-direction:column;gap:1rem;text-align:center;}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<section class="hero" style="padding:0;border-bottom:1px solid var(--border);">
+<div class="hero-bg"></div>
+<div class="hero-line-v"></div><div class="hero-line-v"></div><div class="hero-line-v"></div>
+<nav class="hero-nav"><span class="logo">Digital Plane</span><span class="nav-meta">Proposta Confidencial &nbsp;\xb7&nbsp; {{PROPOSAL_DATE}}</span></nav>
+<div class="hero-content">
+<div class="proposal-tag">Proposta Estrat\xe9gica</div>
+<h1 class="hero-title">{{CLIENT_NAME}}<br><em>\xd7 Digital Plane</em></h1>
+<p class="hero-subtitle">{{HERO_SUBTITLE}}</p>
+</div>
+<div class="hero-footer">
+<div class="hero-stat"><div class="stat-label">Cliente</div><div class="stat-value">{{CLIENT_NAME}}</div></div>
+<div class="hero-stat"><div class="stat-label">Proposta</div><div class="stat-value">{{OFFER_NAME}}</div></div>
+<div class="hero-stat"><div class="stat-label">Validade</div><div class="stat-value">{{EXPIRY_DATE}}</div></div>
+</div>
+</section>
+<section>
+<div class="section-label" data-num="01">O Ponto de Partida</div>
+<div class="two-col">
+<div><h2 class="section-title">O que <em>identific\xe1mos</em> na nossa conversa</h2></div>
+<div>
+<div class="challenge-quote fade-up"><p>{{CHALLENGE_QUOTE}}</p></div>
+<div class="section-body fade-up">{{CHALLENGE_BODY}}</div>
+</div>
+</div>
+</section>
+<section>
+<div class="section-label" data-num="02">A Nossa Abordagem</div>
+<h2 class="section-title">N\xe3o vendemos <em>conte\xfado.</em><br>Constru\xedmos autoridade.</h2>
+<div class="section-body fade-up" style="margin-bottom:2rem;">{{APPROACH_BODY}}</div>
+<div class="deliverables-grid">{{DELIVERABLES_HTML}}</div>
+</section>
+<section>
+<div class="section-label" data-num="03">O Processo</div>
+<div class="two-col">
+<div><h2 class="section-title">Como <em>acontece</em> na pr\xe1tica</h2><p class="section-body">Do primeiro briefing \xe0 primeira publica\xe7\xe3o \u2014 um processo pensado para exigir o m\xednimo de ti e entregar o m\xe1ximo de impacto.</p></div>
+<div class="timeline fade-up">{{TIMELINE_HTML}}</div>
+</div>
+</section>
+<section class="investment-section">
+<div class="section-label" data-num="04">O Investimento</div>
+<div class="two-col">
+<div><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>
+<div class="investment-card fade-up">
+<div class="investment-label">Investimento Total</div>
+<div class="investment-price"><sup>{{CURRENCY}}</sup>{{PRICE}}</div>
+<div class="investment-terms">
+<div class="term-row"><span class="term-key">Dura\xe7\xe3o</span><span class="term-val">{{DURATION}}</span></div>
+<div class="term-row"><span class="term-key">Estrutura de Pagamento</span><span class="term-val">{{PAYMENT_STRUCTURE}}</span></div>
+<div class="term-row"><span class="term-key">In\xedcio</span><span class="term-val">{{START_DATE}}</span></div>
+<div class="term-row"><span class="term-key">Validade da Proposta</span><span class="term-val">{{EXPIRY_DATE}}</span></div>
+</div>
+</div>
+</div>
+</section>
+<section class="accept-section">
+<div class="accept-inner">
+<div class="section-label" data-num="05">Avan\xe7ar</div>
+<h2 class="section-title">Pronto para <em>come\xe7ar?</em></h2>
+<p class="section-body">Assina abaixo para confirmar a tua aceita\xe7\xe3o desta proposta. Assim que recebermos, enviamos o contrato formal e os pr\xf3ximos passos.</p>
+<div class="accept-form">
+<div class="field-group"><label class="field-label">Nome completo</label><input type="text" class="field-input" id="sig-name" placeholder="Nome como aparece no contrato"/></div>
+<div class="field-group"><label class="field-label">Email</label><input type="email" class="field-input" id="sig-email" placeholder="email@empresa.com"/></div>
+<label class="checkbox-group"><input type="checkbox" id="sig-agree"/><span class="checkbox-custom"></span><span class="checkbox-text">Li e aceito os termos desta proposta. Entendo que a Digital Plane ir\xe1 enviar o contrato formal ap\xf3s confirma\xe7\xe3o.</span></label>
+<button class="btn-accept" id="btn-submit" disabled onclick="handleAccept()">Aceitar Proposta</button>
+<div class="success-message" id="success-msg"><p>Obrigado, {{CLIENT_NAME}}. A tua confirma\xe7\xe3o foi registada. Receber\xe1s o contrato em breve.</p></div>
+</div>
+</div>
+</section>
+<footer><span class="footer-logo">Digital Plane \xa9 2025</span><span class="footer-meta">Proposta confidencial \xb7 {{CLIENT_NAME}} \xb7 {{PROPOSAL_DATE}}</span></footer>
+<script>
+window.addEventListener('scroll',()=>{const d=document.documentElement;document.getElementById('progress').style.width=((d.scrollTop/(d.scrollHeight-d.clientHeight))*100)+'%';});
+const obs=new IntersectionObserver((e)=>{e.forEach((el,i)=>{if(el.isIntersecting){setTimeout(()=>el.target.classList.add('visible'),i*120);obs.unobserve(el.target);}});},{threshold:0.1});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+const ni=document.getElementById('sig-name'),ei=document.getElementById('sig-email'),ai=document.getElementById('sig-agree'),sb=document.getElementById('btn-submit');
+function chk(){sb.disabled=!(ni.value.trim().length>2&&ei.value.includes('@')&&ai.checked);}
+[ni,ei].forEach(el=>el.addEventListener('input',chk));ai.addEventListener('change',chk);
+function handleAccept(){sb.disabled=true;sb.textContent='A registar...';fetch('{{MAKE_WEBHOOK_URL}}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client:'{{CLIENT_NAME}}',signer_name:ni.value.trim(),signer_email:ei.value.trim(),proposal:'{{OFFER_NAME}}',accepted_at:new Date().toISOString()})}).finally(()=>{sb.textContent='Proposta Aceite \u2713';document.getElementById('success-msg').classList.add('show');});}
+<\/script>
+</body>
+</html>`;
+</script>
+</body>
+</html>
