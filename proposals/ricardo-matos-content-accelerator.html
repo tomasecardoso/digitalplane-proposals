@@ -53,6 +53,30 @@ section{padding:7rem 4rem;border-bottom:1px solid var(--border);position:relativ
 .timeline-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.5rem;}
 .timeline-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
 .investment-section{background:var(--surface);}
+.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+.pillar-card{background:var(--black);border:1px solid var(--border-light);padding:2rem;position:relative;overflow:hidden;}
+.pillar-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
+.pillar-name{font-family:"Bebas Neue",sans-serif;font-size:1.3rem;letter-spacing:0.03em;line-height:1.1;}
+.pillar-price{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;}
+.pillar-period{font-size:0.6em;color:var(--text-muted);font-family:"DM Mono",monospace;}
+.pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;}
+.pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
+.pillar-includes li::before{content:"→";position:absolute;left:0;color:var(--accent);font-size:0.7rem;}
+.total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);margin-bottom:1.5rem;}
+.total-label{font-family:"DM Mono",monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);}
+.total-val{font-family:"Bebas Neue",sans-serif;font-size:2.2rem;letter-spacing:0.02em;color:var(--text-primary);}
+.total-period{font-size:0.35em;color:var(--text-muted);font-family:"DM Mono",monospace;}
+.rev-share-block{border:1px solid var(--border-light);padding:2rem;margin-bottom:1.5rem;}
+.rev-share-label{font-family:"DM Mono",monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
+.rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);}
+.rev-row:last-of-type{border-bottom:none;}
+.rev-label{font-size:0.875rem;color:var(--text-secondary);}
+.rev-val{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:0.03em;color:var(--text-primary);}
+.rev-basis{font-family:"DM Mono",monospace;font-size:0.45em;color:var(--text-muted);display:block;text-align:right;margin-top:-4px;}
+.rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1rem;line-height:1.6;}
+.investment-terms-simple{border-top:1px solid var(--border);padding-top:1.5rem;}
+
 .investment-card{border:1px solid var(--border-light);padding:4rem;max-width:700px;position:relative;overflow:hidden;}
 .investment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
 .investment-price{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.5rem);letter-spacing:0.02em;line-height:1;margin:1.5rem 0;}
@@ -85,6 +109,31 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 .footer-logo,.footer-meta{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
+
+.investment-intro{max-width:600px;margin-bottom:2.5rem;}
+.investment-dynamic{width:100%;}
+.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px;}
+.pillar-card{background:var(--black);padding:2rem 2.5rem;transition:background 0.2s;}
+.pillar-card:hover{background:var(--surface);}
+.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
+.pillar-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;}
+.pillar-price{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;text-align:right;}
+.pillar-price sup{font-size:0.5em;vertical-align:super;font-family:'DM Mono',monospace;}
+.pillar-period{font-size:0.45em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;}
+.pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;padding:0;}
+.pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
+.total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2.5rem;background:var(--surface);border:1px solid var(--border-light);border-top:1px solid var(--accent);margin-bottom:1px;}
+.total-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.total-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;color:var(--text-primary);}
+.total-period{font-size:0.4em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;margin-left:0.25em;}
+.rev-share-block{background:var(--surface);border:1px solid var(--border-light);padding:2rem 2.5rem;margin-bottom:1px;}
+.rev-share-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
+.rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.875rem;}
+.rev-label{color:var(--text-secondary);}
+.rev-val{font-weight:400;color:var(--text-primary);text-align:right;}
+.rev-basis{font-size:0.75em;color:var(--text-muted);margin-left:0.3em;}
+.rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);line-height:1.6;}
+.investment-terms-simple{border:1px solid var(--border-light);padding:1.25rem 2.5rem;background:var(--surface);}
 @media(max-width:768px){.hero-nav,.hero-content{padding:1.5rem;}section{padding:4rem 1.5rem;}.hero-footer{grid-template-columns:1fr;}.hero-stat{padding:1.25rem 1.5rem;border-right:none;border-bottom:1px solid var(--border);}.two-col{grid-template-columns:1fr;gap:3rem;}.investment-card{padding:2rem;}footer{padding:1.5rem;flex-direction:column;gap:1rem;text-align:center;}}
 </style>
 </head>
@@ -97,7 +146,7 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 <div class="hero-content">
 <div class="proposal-tag">Proposta Estratégica</div>
 <h1 class="hero-title">Ricardo Matos<br><em>× Digital Plane</em></h1>
-<p class="hero-subtitle">Sistema de conteúdo estratégico para escalar o teu posicionamento como Game Master do imobiliário português</p>
+<p class="hero-subtitle">Content Accelerator para imobiliário de alto impacto — 3 meses para revolucionar o teu posicionamento e receitas</p>
 </div>
 <div class="hero-footer">
 <div class="hero-stat"><div class="stat-label">Cliente</div><div class="stat-value">Ricardo Matos</div></div>
@@ -110,39 +159,46 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 <div class="two-col">
 <div><h2 class="section-title">O que <em>identificámos</em> na nossa conversa</h2></div>
 <div>
-<div class="challenge-quote fade-up"><p>Preciso de uma máquina de conteúdo que documente tudo o que faço e transforme isso numa narrativa estratégica que venda.</p></div>
-<div class="section-body fade-up"><p>Ricardo, tu já construíste um ecossistema imobiliário sólido — desde a formação de operadores até à gestão de múltiplos projectos simultâneos. Mas há uma lacuna crítica: o conteúdo que produzes não está alinhado estrategicamente com os teus lançamentos de negócio.</p><p>A tua marca pessoal tem potencial para ser o motor de tudo — infoprodutos, eventos presenciais e negócios imobiliários. Contudo, trabalhas com sistemas fragmentados que não capitalizam a sinergia entre estas vertentes. Precisas de uma abordagem integrada que transforme cada dia nas obras, cada reunião estratégica, cada milestone dos projectos numa peça de conteúdo que fortalece o teu posicionamento como Game Master.</p></div>
+<div class="challenge-quote fade-up"><p>O conteúdo atual não está a converter à altura do potencial. Precisamos de uma estratégia integrada que transforme cada gravação num sistema de vendas.</p></div>
+<div class="section-body fade-up"><p>O Ricardo tem construído uma marca sólida no imobiliário, mas existe um desalinhamento entre a qualidade dos projetos e a monetização através do conteúdo. A estratégia atual está fragmentada: o conteúdo orgânico não alimenta diretamente as vendas, os eventos não têm o posicionamento premium que merecem, e a marca empresarial Escala Épica está subaproveitada.</p><p>O mercado de infoprodutos está em transformação. Os investidores experientes procuram experiências premium, networking real e acesso a operadores qualificados — não mais cursos básicos. É momento de reposicionar o Ricardo como o "Game Master" que conecta capital, operadores e oportunidades, criando um ecossistema de valor exponencial.</p></div>
 </div>
 </div>
 </section>
 <section>
 <div class="section-label" data-num="02">A Nossa Abordagem</div>
 <h2 class="section-title">Não vendemos <em>conteúdo.</em><br>Construímos autoridade.</h2>
-<div class="section-body fade-up" style="margin-bottom:2rem;"><p>Vamos criar um sistema de documentação estratégica que captura o teu dia a dia operacional e transforma isso numa narrativa coesa de autoridade. Em vez de conteúdo genérico, vamos filmar reuniões reais, decisões nos projectos, bastidores das obras — conteúdo que só tu podes criar porque só tu tens acesso a estes momentos.</p></div>
-<div class="deliverables-grid"><div class="deliverable-item"><div class="deliverable-num">01</div><div class="deliverable-name">Estratégia Game Master & Arquitetura de Conteúdo</div><div class="deliverable-desc">Desenvolvimento do posicionamento como agregador do mercado imobiliário português e calendário estratégico alinhado com lançamentos de negócio</div></div><div class="deliverable-item"><div class="deliverable-num">02</div><div class="deliverable-name">Documentação Operacional Premium</div><div class="deliverable-desc">3 dias de captação mensal focados em reuniões, obras e decisões reais dos teus projectos imobiliários</div></div><div class="deliverable-item"><div class="deliverable-num">03</div><div class="deliverable-name">Produção e Distribuição Multi-Plataforma</div><div class="deliverable-desc">20-30 vídeos mensais optimizados para YouTube, Instagram, TikTok e LinkedIn com narrativa estratégica consistente</div></div><div class="deliverable-item"><div class="deliverable-num">04</div><div class="deliverable-name">Criativos de Lançamento e Eventos</div><div class="deliverable-desc">VSLs, materiais promocionais e cobertura completa dos eventos presenciais integrados na estratégia de marca</div></div><div class="deliverable-item"><div class="deliverable-num">05</div><div class="deliverable-name">Escala Épica / Pireza - Marca Empresarial</div><div class="deliverable-desc">Documentação de projectos activos (série Pireza, 4 moradias em Quinta do Conde com Guez Estruturas, 2 prédios em Lisboa), testemunhos, spotlights de equipa (Rodrigo comercial), campanhas de lançamento de propriedades e conteúdo institucional com edição completa e publicação multiplataforma</div></div><div class="deliverable-item"><div class="deliverable-num">06</div><div class="deliverable-name">Reports de Performance e Optimização</div><div class="deliverable-desc">Análise mensal do impacto do conteúdo nas métricas de negócio e ajustes estratégicos baseados em dados</div></div></div>
+<div class="section-body fade-up" style="margin-bottom:2rem;"><p>A nossa abordagem centra-se em três pilares integrados que se alimentam mutuamente. A Marca Pessoal do Ricardo torna-se o motor de credibilidade e awareness. A Marca Empresarial documenta a realidade operacional e gera prova social. E a estratégia de eventos e infoprodutos converte esta audiência qualificada em receitas recorrentes. Cada conteúdo criado serve múltiplos objetivos: posicionamento, educação e conversão.</p></div>
+<div class="deliverables-grid"><div class="deliverable-item"><div class="deliverable-num">01</div><div class="deliverable-name">Estratégia de Posicionamento Game Master</div><div class="deliverable-desc">Rebranding do Ricardo como agregador de capital e operadores, com narrativa visual e arquitetura de conteúdo integrada</div></div><div class="deliverable-item"><div class="deliverable-num">02</div><div class="deliverable-name">Sistema de Produção de Conteúdo</div><div class="deliverable-desc">3 dias de gravação mensal transformados em 20-30 vídeos estratégicos para YouTube, Instagram, TikTok e LinkedIn</div></div><div class="deliverable-item"><div class="deliverable-num">03</div><div class="deliverable-name">Documentação de Projetos Empresariais</div><div class="deliverable-desc">Séries sobre Pireza, moradias Quinta do Conde, prédios de Lisboa, com testemunhos de investidores e spotlights de equipa</div></div><div class="deliverable-item"><div class="deliverable-num">04</div><div class="deliverable-name">Campanhas de Lançamento Premium</div><div class="deliverable-desc">Criativos e VSLs para ImoCircle, Field Investors e lançamentos imobiliários com foco em conversão high-ticket</div></div><div class="deliverable-item"><div class="deliverable-num">05</div><div class="deliverable-name">Gestão Multiplataforma e Reports</div><div class="deliverable-desc">Publicação estratégica em todas as redes, análise de performance e otimização contínua baseada em resultados</div></div></div>
 </section>
 <section>
 <div class="section-label" data-num="03">O Processo</div>
 <div class="two-col">
 <div><h2 class="section-title">Como <em>acontece</em> na prática</h2><p class="section-body">Do primeiro briefing à primeira publicação — um processo pensado para exigir o mínimo de ti e entregar o máximo de impacto.</p></div>
-<div class="timeline fade-up"><div class="timeline-item"><div class="timeline-phase">Semana 1</div><div class="timeline-title">Arquitetura Estratégica</div><div class="timeline-desc">Definição do posicionamento Game Master, personas dos arquétipos (operador, investidor, consultor) e calendário de conteúdo alinhado com lançamentos</div></div><div class="timeline-item"><div class="timeline-phase">Semana 2-3</div><div class="timeline-title">Implementação do Sistema</div><div class="timeline-desc">Início das captações operacionais, criação dos templates de produção e estabelecimento dos workflows de publicação</div></div><div class="timeline-item"><div class="timeline-phase">Mês 2-3</div><div class="timeline-title">Optimização e Escala</div><div class="timeline-desc">Refinamento da narrativa baseado em feedback, aumento do volume de produção e preparação dos primeiros lançamentos estratégicos</div></div><div class="timeline-item"><div class="timeline-phase">Mês 4-6</div><div class="timeline-title">Monetização Integrada</div><div class="timeline-desc">Execução de campanhas de lançamento com conteúdo orgânico como base, cobertura de eventos e optimização do funil de conversão</div></div><div class="timeline-item"><div class="timeline-phase">Mês 7-12</div><div class="timeline-title">Consolidação de Autoridade</div><div class="timeline-desc">Expansão da narrativa Game Master, documentação de casos de sucesso dos operadores formados e preparação para escalamento do modelo</div></div></div>
+<div class="timeline fade-up"><div class="timeline-item"><div class="timeline-phase">Semana 1</div><div class="timeline-title">Estratégia e Setup</div><div class="timeline-desc">Definição da narrativa Game Master, calendário de conteúdos e preparação das primeiras gravações</div></div><div class="timeline-item"><div class="timeline-phase">Semana 2-4</div><div class="timeline-title">Produção Intensiva</div><div class="timeline-desc">Primeiras gravações, criação de templates visuais e início da documentação dos projetos ativos</div></div><div class="timeline-item"><div class="timeline-phase">Mês 2</div><div class="timeline-title">Pré-lançamento ImoCircle</div><div class="timeline-desc">Conteúdo de aquecimento para evento de 23 de Maio, testimoniais e criativos de campanha</div></div><div class="timeline-item"><div class="timeline-phase">Mês 2-3</div><div class="timeline-title">Momentum para Field Investors</div><div class="timeline-desc">Escalada de conteúdo premium, documentação VIP das obras e construção de lista para evento de Outubro</div></div><div class="timeline-item"><div class="timeline-phase">Mês 3</div><div class="timeline-title">Otimização e Scale</div><div class="timeline-desc">Análise de resultados, refinamento da estratégia e preparação para continuidade pós-período inicial</div></div></div>
 </div>
 </section>
 <section class="investment-section">
 <div class="section-label" data-num="04">O Investimento</div>
-<div class="two-col">
-<div><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">Investimento que se paga através do aumento directo nas conversões dos teus lançamentos e na valorização da tua autoridade como referência do sector</p></div>
-<div class="investment-card fade-up">
-<div class="investment-label">Investimento Total</div>
-<div class="investment-price"><sup>€</sup>4500€</div>
-<div class="investment-terms">
-<div class="term-row"><span class="term-key">Duração</span><span class="term-val">12 meses</span></div>
-<div class="term-row"><span class="term-key">Estrutura de Pagamento</span><span class="term-val">4.500 euros por mês, ou 12 meses com dois meses de desconto, ou seis meses com um mês de desconto.</span></div>
+<div class="investment-intro"><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">Modelo híbrido que combina retainer fixo com participação nos resultados — garantindo alinhamento total entre o esforço da Digital Plane e o crescimento do Ricardo</p></div>
+<div class="investment-dynamic"><div class="pillars-wrap"><div class="pillar-card fade-up">
+<div class="pillar-header"><div class="pillar-name">Marca Pessoal</div><div class="pillar-price"><sup>€</sup>4.500<span class="pillar-period">/mês</span></div></div>
+<ul class="pillar-includes"><li>3 dias de gravação mensais</li><li>20-30 vídeos estratégicos</li><li>Gestão de YouTube, Instagram, TikTok, LinkedIn</li><li>Criativos para campanhas e lançamentos</li><li>Reports mensais de performance</li></ul>
+</div><div class="pillar-card fade-up">
+<div class="pillar-header"><div class="pillar-name">Marca Empresarial — Escala Épica</div><div class="pillar-price"><sup>€</sup>1.500<span class="pillar-period">/mês</span></div></div>
+<ul class="pillar-includes"><li>Documentação de projetos ativos</li><li>Testemunhos de investidores e clientes</li><li>Spotlights de equipa</li><li>Campanhas de lançamento de propriedades</li><li>Conteúdo institucional multiplataforma</li></ul>
+</div></div>
+<div class="total-retainer fade-up"><span class="total-label">Retainer Total</span><span class="total-val">€6.000<span class="total-period">/mês</span></span></div>
+
+<div class="rev-share-block fade-up">
+<div class="rev-share-label">Revenue Share</div>
+<div class="rev-row"><span class="rev-label">Comunidade e Infoprodutos</span><span class="rev-val">20% <span class="rev-basis">da receita gerada pela comunidade ImoCircle e programas de coaching associados</span></span></div><div class="rev-row"><span class="rev-label">Field Investors Event</span><span class="rev-val">20% <span class="rev-basis">do lucro líquido de bilhetes do evento de 10 de Outubro</span></span></div><div class="rev-row"><span class="rev-label">Lançamentos Imobiliários</span><span class="rev-val">≈2% <span class="rev-basis">da receita de lançamento de projetos imobiliários (a definir projeto a projeto)</span></span></div>
+<div class="rev-note">Este modelo garante alinhamento total entre o esforço da Digital Plane e os teus resultados — crescemos juntos.</div>
+</div>
+<div class="investment-terms-simple fade-up">
+<div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">Pagamento mensal de 6.000€. Desconto de 2 meses para pagamento anual antecipado (60.000€). Desconto de 1 mês para pagamento semestral antecipado (30.000€).</span></div>
 <div class="term-row"><span class="term-key">Início</span><span class="term-val">Abril 2026</span></div>
-<div class="term-row"><span class="term-key">Validade da Proposta</span><span class="term-val">16 de abril de 2026</span></div>
-</div>
-</div>
-</div>
+<div class="term-row"><span class="term-key">Validade</span><span class="term-val">16 de abril de 2026</span></div>
+</div></div>
 </section>
 <section class="accept-section">
 <div class="accept-inner">
