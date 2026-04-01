@@ -33,7 +33,7 @@
     .lock-error.show{display:block;}
 
     /* SHELL */
-    #app{display:grid;grid-template-columns:280px 1fr;height:100vh;}
+    #app{display:none;grid-template-columns:280px 1fr;height:100vh;}#app.unlocked{display:grid;}
 
     /* SIDEBAR */
     .sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
@@ -328,6 +328,7 @@ const APP_PASSWORD = 'simba';
 function unlock() {
   if (document.getElementById('lock-input').value === APP_PASSWORD) {
     document.getElementById('lock').classList.add('hidden');
+    document.getElementById('app').classList.add('unlocked');
     loadCfg();
   } else {
     document.getElementById('lock-error').classList.add('show');
@@ -823,7 +824,8 @@ fetch('{{MAKE_WEBHOOK_URL}}',{method:'POST',headers:{'Content-Type':'application
 sb.textContent='Proposta Aceite ✓';document.getElementById('success-msg').classList.add('show');
 }
 <\/script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"><\/script>
-<script>emailjs.init("U5_GKPJT0ijmt7fLe");<\/script>
 </body>
 </html>`;
+</script>
+</body>
+</html>
