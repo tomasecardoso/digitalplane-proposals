@@ -1,73 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>Digital Plane — Proposal Engine</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet"/>
   <style>
-    :root {
+    :root{
       --bg:#0c0c0c;--surface:#141414;--surface2:#1b1b1b;
       --border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.13);
       --text:#eeebe6;--text-2:rgba(238,235,230,0.52);--text-3:rgba(238,235,230,0.28);
       --accent:#ff5a00;--accent-dim:rgba(255,90,0,0.1);--accent-dim2:rgba(255,90,0,0.05);
       --green:#22c55e;--green-dim:rgba(34,197,94,0.09);--red:#ef4444;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;-webkit-font-smoothing:antialiased;overflow:hidden;}
+    html,body{height:100%;overflow:hidden;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
 
-    /* LOCK */
-    #lock{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;}
+    /* ── LOCK ── */
+    #lock{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:2rem;}
     #lock.hidden{display:none;}
-    .lock-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;}
+    .lock-logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:0.05em;}
     .lock-sub{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);}
-    .lock-form{display:flex;flex-direction:column;gap:0.75rem;width:280px;}
-    .lock-input{background:var(--surface);border:1px solid var(--border-light);padding:0.85rem 1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;letter-spacing:0.1em;outline:none;text-align:center;transition:border-color 0.15s;}
+    .lock-form{display:flex;flex-direction:column;gap:0.75rem;width:100%;max-width:300px;}
+    .lock-input{background:var(--surface);border:1px solid var(--border-light);padding:1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;letter-spacing:0.1em;outline:none;text-align:center;transition:border-color 0.15s;-webkit-appearance:none;border-radius:0;}
     .lock-input:focus{border-color:var(--accent);}
-    .lock-input::placeholder{color:var(--text-3);letter-spacing:0.05em;}
-    .lock-btn{background:var(--accent);color:#0c0c0c;border:none;padding:0.85rem;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;}
-    .lock-btn:hover{opacity:0.88;}
-    .lock-error{font-size:0.75rem;color:var(--red);text-align:center;display:none;}
+    .lock-input::placeholder{color:var(--text-3);}
+    .lock-btn{background:var(--accent);color:#0c0c0c;border:none;padding:1rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .lock-error{font-size:0.8rem;color:var(--red);text-align:center;display:none;}
     .lock-error.show{display:block;}
 
-    /* SHELL */
-    #app{display:none;grid-template-columns:280px 1fr;height:100vh;}#app.unlocked{display:grid;}
+    /* ── APP SHELL ── */
+    #app{display:none;height:100dvh;flex-direction:column;}
+    #app.unlocked{display:flex;}
 
-    /* SIDEBAR */
-    .sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
-    .sidebar-top{padding:1.75rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;}
-    .logo-mark{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.04em;line-height:1;}
-    .logo-sub{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-top:0.2rem;}
-    .steps-nav{padding:1.25rem 1rem;}
-    .step-item{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;cursor:pointer;transition:background 0.15s;border-radius:2px;}
-    .step-item:hover{background:var(--surface);}
-    .step-item.active{background:var(--accent-dim);}
-    .step-dot{width:7px;height:7px;border-radius:50%;border:1px solid var(--border-light);flex-shrink:0;transition:all 0.2s;}
-    .step-item.active .step-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px rgba(255,90,0,0.4);}
-    .step-item.done .step-dot{background:var(--green);border-color:var(--green);}
-    .step-label{font-size:0.8rem;color:var(--text-2);}
-    .step-item.active .step-label,.step-item.done .step-label{color:var(--text);}
-    .step-tag{font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--text-3);margin-left:auto;}
-    .step-item.done .step-tag{color:var(--green);}
-    .step-item.active .step-tag{color:var(--accent);}
-    .cfg-section{padding:1.25rem 1.75rem;border-top:1px solid var(--border);margin-top:auto;flex-shrink:0;}
-    .cfg-title{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;}
-    .cfg-field{margin-bottom:0.65rem;}
-    .cfg-label{font-size:0.65rem;color:var(--text-3);margin-bottom:0.3rem;}
-    .cfg-input{width:100%;background:var(--surface2);border:1px solid var(--border);padding:0.4rem 0.6rem;color:var(--text);font-family:'DM Mono',monospace;font-size:0.65rem;outline:none;transition:border-color 0.15s;}
-    .cfg-input:focus{border-color:var(--accent);}
-    .cfg-input::placeholder{color:var(--text-3);}
-    .cfg-save{width:100%;background:transparent;border:1px solid var(--border-light);color:var(--text-2);padding:0.5rem;font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;margin-top:0.5rem;}
-    .cfg-save:hover{border-color:var(--accent);color:var(--accent);}
-
-    /* MAIN */
-    .main{display:grid;grid-template-rows:auto 1fr;height:100vh;overflow:hidden;}
-    .topbar{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-    .page-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.04em;}
-    .status-badge{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.3rem 0.75rem;border:1px solid var(--border);color:var(--text-3);display:flex;align-items:center;gap:0.4rem;}
-    .status-dot{width:5px;height:5px;border-radius:50%;background:var(--text-3);}
+    /* ── TOPBAR ── */
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:0.875rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:0.75rem;}
+    .menu-btn{background:none;border:none;color:var(--text-2);cursor:pointer;padding:0.25rem;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;}
+    .menu-btn svg{width:18px;height:18px;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.04em;}
+    .status-badge{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.25rem 0.6rem;border:1px solid var(--border);color:var(--text-3);display:flex;align-items:center;gap:0.35rem;}
+    .status-dot{width:5px;height:5px;border-radius:50%;background:var(--text-3);flex-shrink:0;}
     .status-badge.generating{border-color:rgba(255,90,0,0.3);color:var(--accent);}
     .status-badge.generating .status-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite;}
     .status-badge.live{border-color:rgba(34,197,94,0.3);color:var(--green);}
@@ -76,89 +53,163 @@
     .status-badge.error .status-dot{background:var(--red);}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-    /* CONTENT AREA */
-    .content-area{display:grid;grid-template-columns:1fr;overflow:hidden;height:100%;}
-    .content-area.with-preview{grid-template-columns:420px 1fr;}
+    /* ── STEP TABS (mobile) ── */
+    .step-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .step-tabs::-webkit-scrollbar{display:none;}
+    .step-tab{flex-shrink:0;padding:0.75rem 1.1rem;font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+    .step-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .step-tab.done{color:var(--green);}
 
-    /* FORM PANE */
-    .form-pane{overflow-y:auto;padding:2rem 2.5rem;}
+    /* ── CONTENT ── */
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1.5rem 1.25rem;padding-bottom:calc(1.5rem + var(--safe-bottom));}
+
+    /* ── PANELS ── */
     .panel{display:none;}
     .panel.active{display:block;}
-    .panel-eyebrow{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem;}
-    .panel-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.03em;line-height:1;margin-bottom:0.4rem;}
-    .panel-desc{font-size:0.825rem;color:var(--text-2);line-height:1.7;margin-bottom:2rem;}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    .field{display:flex;flex-direction:column;gap:0.4rem;}
-    .field.full{grid-column:1/-1;}
-    .field-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);}
-    .field-input,.field-select,.field-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.7rem 0.9rem;color:var(--text);font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;}
+    .panel-eyebrow{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:0.35rem;}
+    .panel-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.03em;line-height:1;margin-bottom:0.4rem;}
+    .panel-desc{font-size:0.825rem;color:var(--text-2);line-height:1.65;margin-bottom:1.75rem;}
+
+    /* ── FIELDS ── */
+    .field{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem;}
+    .field-label{font-family:'DM Mono',monospace;font-size:0.56rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);}
+    .field-input,.field-select,.field-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.85rem 1rem;color:var(--text);font-family:'Inter',sans-serif;font-size:1rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;-webkit-appearance:none;border-radius:0;}
     .field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--accent);}
     .field-input::placeholder,.field-textarea::placeholder{color:var(--text-3);}
-    .field-select{appearance:none;cursor:pointer;}
-    .field-textarea{resize:vertical;min-height:130px;line-height:1.7;}
-    .field-textarea.tall{min-height:200px;}
-    .granola-hint{background:var(--accent-dim2);border:1px dashed rgba(255,90,0,0.18);padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.6rem;}
-    .granola-hint-icon{font-size:0.7rem;color:var(--accent);flex-shrink:0;font-family:'DM Mono',monospace;}
-    .granola-hint-text{font-size:0.75rem;color:var(--text-2);line-height:1.6;}
-    .actions{display:flex;gap:0.75rem;margin-top:1.5rem;align-items:center;}
-    .btn{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.8rem 1.5rem;border:none;cursor:pointer;transition:all 0.15s;}
+    .field-select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(238,235,230,0.3)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;}
+    .field-textarea{resize:none;min-height:140px;line-height:1.7;}
+    .field-textarea.tall{min-height:180px;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+
+    /* ── VOICE BUTTON ── */
+    .field-with-voice{position:relative;}
+    .field-with-voice .field-textarea{padding-right:3.5rem;}
+    .voice-btn{position:absolute;right:0.75rem;bottom:0.75rem;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-light);background:var(--surface2);color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+    .voice-btn:hover,.voice-btn:active{border-color:var(--accent);color:var(--accent);}
+    .voice-btn.recording{border-color:var(--red);color:var(--red);background:rgba(239,68,68,0.1);animation:rec-pulse 1s ease-in-out infinite;}
+    .voice-btn svg{width:16px;height:16px;}
+    @keyframes rec-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+    .voice-status{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;color:var(--red);margin-top:0.3rem;display:none;align-items:center;gap:0.4rem;}
+    .voice-status.show{display:flex;}
+
+    /* ── GRANOLA HINT ── */
+    .granola-hint{background:var(--accent-dim2);border:1px dashed rgba(255,90,0,0.2);padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.6rem;border-radius:2px;}
+    .granola-hint-icon{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--accent);flex-shrink:0;}
+    .granola-hint-text{font-size:0.78rem;color:var(--text-2);line-height:1.6;}
+
+    /* ── BUTTONS ── */
+    .actions{display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;}
+    .btn{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.9rem 1.5rem;border:none;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
     .btn-primary{background:var(--accent);color:#0c0c0c;}
-    .btn-primary:hover:not(:disabled){opacity:0.88;}
+    .btn-primary:active{opacity:0.85;}
     .btn-primary:disabled{opacity:0.3;cursor:not-allowed;}
     .btn-ghost{background:transparent;border:1px solid var(--border-light);color:var(--text-2);}
-    .btn-ghost:hover{border-color:var(--text-2);color:var(--text);}
+    .btn-ghost:active{border-color:var(--text-2);}
+    .btn-full{width:100%;justify-content:center;}
 
-    /* LOADING */
-    .gen-loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:1.25rem;text-align:center;}
+    /* ── LOADING ── */
+    .gen-loading{display:none;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;gap:1.5rem;text-align:center;}
     .gen-loading.show{display:flex;}
-    .spinner{width:28px;height:28px;border:1px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+    .spinner{width:32px;height:32px;border:1.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg)}}
     .gen-label{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-2);}
-    .gen-sub{font-size:0.75rem;color:var(--text-3);}
+    .gen-sub{font-size:0.78rem;color:var(--text-3);}
 
-    /* RESULT */
+    /* ── RESULT ── */
     .result-block{display:none;}
     .result-block.show{display:block;}
-    .url-card{padding:1.25rem 1.5rem;background:var(--green-dim);border:1px solid rgba(34,197,94,0.18);margin-bottom:1.5rem;transition:background 0.4s;}
-    .url-card.flash{background:rgba(34,197,94,0.22);}
+    .url-card{padding:1.25rem;background:var(--green-dim);border:1px solid rgba(34,197,94,0.18);margin-bottom:1.25rem;transition:background 0.4s;}
+    .url-card.flash{background:rgba(34,197,94,0.25);}
     .url-card-label{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;}
-    .url-val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);word-break:break-all;cursor:pointer;padding:0.6rem 0.85rem;background:var(--surface);border:1px solid var(--border-light);transition:border-color 0.15s;}
-    .url-val:hover{border-color:var(--green);}
+    .url-val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);word-break:break-all;cursor:pointer;padding:0.6rem 0.85rem;background:var(--surface);border:1px solid var(--border-light);}
     .url-hint{font-size:0.68rem;color:var(--text-3);margin-top:0.4rem;}
     .url-actions{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
 
-    /* FEEDBACK */
-    .feedback-block{margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid var(--border);}
+    /* ── FEEDBACK ── */
+    .feedback-block{margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border);}
     .fb-eyebrow{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-3);margin-bottom:0.3rem;}
     .fb-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;margin-bottom:0.4rem;}
     .fb-desc{font-size:0.78rem;color:var(--text-2);line-height:1.6;margin-bottom:1.25rem;}
     .fb-history{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;}
     .fb-item{padding:0.7rem 0.9rem;background:var(--surface2);border-left:2px solid var(--green);font-size:0.75rem;color:var(--text-2);line-height:1.5;}
     .fb-item-meta{font-family:'DM Mono',monospace;font-size:0.52rem;color:var(--green);margin-bottom:0.25rem;}
-    .fb-examples{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.75rem;}
-    .fb-chip{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.05em;padding:0.28rem 0.6rem;background:var(--surface2);border:1px solid var(--border);color:var(--text-3);cursor:pointer;transition:all 0.15s;}
-    .fb-chip:hover{border-color:var(--accent);color:var(--accent);}
-    .fb-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.75rem 0.9rem;color:var(--text);font-family:'Inter',sans-serif;font-size:0.825rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;resize:vertical;min-height:85px;line-height:1.7;}
+    .fb-chips{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.75rem;}
+    .fb-chip{font-family:'DM Mono',monospace;font-size:0.55rem;padding:0.3rem 0.65rem;background:var(--surface2);border:1px solid var(--border);color:var(--text-3);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .fb-chip:active{border-color:var(--accent);color:var(--accent);}
+    .fb-field{position:relative;}
+    .fb-textarea{background:var(--surface);border:1px solid var(--border);border-bottom:1px solid var(--border-light);padding:0.85rem 3.5rem 0.85rem 1rem;color:var(--text);font-family:'Inter',sans-serif;font-size:1rem;font-weight:300;outline:none;transition:border-color 0.15s;width:100%;resize:none;min-height:100px;line-height:1.7;-webkit-appearance:none;border-radius:0;}
     .fb-textarea:focus{border-color:var(--accent);}
     .fb-textarea::placeholder{color:var(--text-3);}
+    .fb-voice-btn{position:absolute;right:0.75rem;bottom:0.75rem;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-light);background:var(--surface2);color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .fb-voice-btn.recording{border-color:var(--red);color:var(--red);background:rgba(239,68,68,0.1);animation:rec-pulse 1s ease-in-out infinite;}
+    .fb-voice-btn svg{width:16px;height:16px;}
 
-    /* LOG */
+    /* ── LOG ── */
     .log-block{margin-top:1.5rem;}
     .log-title{font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:0.5rem;}
-    .log-lines{display:flex;flex-direction:column;gap:0.25rem;}
+    .log-lines{display:flex;flex-direction:column;gap:0.25rem;max-height:200px;overflow-y:auto;}
     .log-line{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-3);display:flex;gap:0.6rem;}
     .log-line.ok{color:var(--green);}
     .log-line.err{color:var(--red);}
     .log-line.info{color:var(--accent);}
     .log-time{opacity:0.5;flex-shrink:0;}
 
-    /* PREVIEW */
-    .preview-pane{display:none;border-left:1px solid var(--border);flex-direction:column;height:100%;overflow:hidden;}
+    /* ── DRAWER (settings) ── */
+    .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:800;display:none;backdrop-filter:blur(2px);}
+    .drawer-overlay.show{display:block;}
+    .drawer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);z-index:900;transform:translateY(100%);transition:transform 0.3s ease;border-top:1px solid var(--border-light);max-height:85dvh;overflow-y:auto;padding-bottom:var(--safe-bottom);}
+    .drawer.open{transform:translateY(0);}
+    .drawer-handle{width:36px;height:4px;background:var(--border-light);border-radius:2px;margin:0.75rem auto;}
+    .drawer-title{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-3);padding:0 1.25rem 1rem;}
+    .drawer-body{padding:0 1.25rem 1.5rem;}
+    .cfg-field{margin-bottom:0.75rem;}
+    .cfg-label{font-size:0.68rem;color:var(--text-3);margin-bottom:0.3rem;}
+    .cfg-input{width:100%;background:var(--surface2);border:1px solid var(--border);padding:0.75rem 1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75rem;outline:none;transition:border-color 0.15s;-webkit-appearance:none;border-radius:0;}
+    .cfg-input:focus{border-color:var(--accent);}
+    .cfg-input::placeholder{color:var(--text-3);}
+    .cfg-save{width:100%;background:transparent;border:1px solid var(--border-light);color:var(--text-2);padding:0.85rem;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;margin-top:0.5rem;-webkit-tap-highlight-color:transparent;}
+
+    /* ── DESKTOP OVERRIDES ── */
+    @media(min-width:768px){
+      #app.unlocked{display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr;}
+      .topbar{grid-column:1/-1;}
+      .menu-btn{display:none;}
+      .step-tabs{display:none;}
+      .sidebar-desktop{display:flex !important;flex-direction:column;border-right:1px solid var(--border);height:100%;overflow-y:auto;}
+      .content{padding:2rem 2.5rem;}
+      .field-textarea.tall{min-height:220px;}
+      .drawer,.drawer-overlay{display:none !important;}
+    }
+    .sidebar-desktop{display:none;}
+    .desktop-steps{padding:1.25rem 1rem;}
+    .desktop-step{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;cursor:pointer;transition:background 0.15s;border-radius:2px;-webkit-tap-highlight-color:transparent;}
+    .desktop-step:hover{background:var(--surface);}
+    .desktop-step.active{background:var(--accent-dim);}
+    .desktop-step.done .ds-dot{background:var(--green);border-color:var(--green);}
+    .desktop-step.active .ds-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px rgba(255,90,0,0.4);}
+    .ds-dot{width:7px;height:7px;border-radius:50%;border:1px solid var(--border-light);flex-shrink:0;transition:all 0.2s;}
+    .ds-label{font-size:0.8rem;color:var(--text-2);}
+    .desktop-step.active .ds-label,.desktop-step.done .ds-label{color:var(--text);}
+    .ds-tag{font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--text-3);margin-left:auto;}
+    .desktop-step.done .ds-tag{color:var(--green);}
+    .desktop-step.active .ds-tag{color:var(--accent);}
+    .desktop-cfg{padding:1.25rem;border-top:1px solid var(--border);margin-top:auto;}
+    .desktop-cfg .cfg-title{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;}
+
+    /* ── DESKTOP PREVIEW ── */
+    .preview-pane{display:none;position:fixed;top:0;right:0;bottom:0;width:50vw;border-left:1px solid var(--border);flex-direction:column;z-index:100;background:var(--bg);}
     .preview-pane.show{display:flex;}
+    @media(min-width:768px){
+      .preview-pane{position:static;width:auto;}
+      .content-wrap{display:grid;grid-template-columns:1fr;height:100%;overflow:hidden;}
+      .content-wrap.with-preview{grid-template-columns:420px 1fr;}
+      .content{height:100%;}
+    }
     .preview-topbar{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
     .preview-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-3);}
-    .preview-badge{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;padding:0.2rem 0.5rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);color:var(--accent);}
+    .preview-badge{font-family:'DM Mono',monospace;font-size:0.55rem;padding:0.2rem 0.5rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);color:var(--accent);}
     .preview-frame{flex:1;width:100%;border:none;background:#fff;}
+    .preview-close{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.2rem;-webkit-tap-highlight-color:transparent;}
 
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-thumb{background:var(--border-light);}
@@ -173,7 +224,7 @@
     <div class="lock-sub">Proposal Engine</div>
   </div>
   <div class="lock-form">
-    <input type="password" class="lock-input" id="lock-input" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()" />
+    <input type="password" class="lock-input" id="lock-input" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()" autocomplete="current-password"/>
     <button class="lock-btn" onclick="unlock()">Entrar</button>
     <div class="lock-error" id="lock-error">Password incorrecta</div>
   </div>
@@ -181,150 +232,233 @@
 
 <!-- APP -->
 <div id="app">
-  <aside class="sidebar">
-    <div class="sidebar-top">
-      <div class="logo-mark">Digital Plane</div>
-      <div class="logo-sub">Proposal Engine</div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" onclick="openDrawer('settings')" aria-label="Configurações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </button>
+      <div class="page-title" id="page-title">Nova Proposta</div>
     </div>
-    <nav class="steps-nav">
-      <div class="step-item active" data-step="1" onclick="goStep(1)"><div class="step-dot"></div><span class="step-label">Cliente</span><span class="step-tag">01</span></div>
-      <div class="step-item" data-step="2" onclick="goStep(2)"><div class="step-dot"></div><span class="step-label">Notas da Reunião</span><span class="step-tag">02</span></div>
-      <div class="step-item" data-step="3" onclick="goStep(3)"><div class="step-dot"></div><span class="step-label">Oferta & Preço</span><span class="step-tag">03</span></div>
-      <div class="step-item" data-step="4" onclick="goStep(4)"><div class="step-dot"></div><span class="step-label">Gerar & Deploy</span><span class="step-tag">04</span></div>
-    </nav>
-    <div class="cfg-section">
+    <div class="status-badge" id="status-badge"><div class="status-dot"></div><span id="status-text">Pronto</span></div>
+  </div>
+
+  <!-- DESKTOP SIDEBAR -->
+  <aside class="sidebar-desktop">
+    <div style="padding:1.5rem 1.75rem 1rem;border-bottom:1px solid var(--border);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.04em;">Digital Plane</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-top:0.2rem;">Proposal Engine</div>
+    </div>
+    <div class="desktop-steps">
+      <div class="desktop-step active" data-step="1" onclick="goStep(1)"><div class="ds-dot"></div><span class="ds-label">Cliente</span><span class="ds-tag">01</span></div>
+      <div class="desktop-step" data-step="2" onclick="goStep(2)"><div class="ds-dot"></div><span class="ds-label">Notas da Reunião</span><span class="ds-tag">02</span></div>
+      <div class="desktop-step" data-step="3" onclick="goStep(3)"><div class="ds-dot"></div><span class="ds-label">Oferta & Preço</span><span class="ds-tag">03</span></div>
+      <div class="desktop-step" data-step="4" onclick="goStep(4)"><div class="ds-dot"></div><span class="ds-label">Gerar & Deploy</span><span class="ds-tag">04</span></div>
+    </div>
+    <div class="desktop-cfg">
       <div class="cfg-title">Configuração</div>
-      <div class="cfg-field"><div class="cfg-label">Anthropic API Key</div><input type="password" class="cfg-input" id="cfg-anthropic" placeholder="sk-ant-..." /></div>
-      <div class="cfg-field"><div class="cfg-label">GitHub Token</div><input type="password" class="cfg-input" id="cfg-github" placeholder="ghp_..." /></div>
-      <div class="cfg-field"><div class="cfg-label">GitHub Repo (user/repo)</div><input type="text" class="cfg-input" id="cfg-repo" placeholder="tomas/dp-proposals" /></div>
-      <div class="cfg-field"><div class="cfg-label">Base URL das Propostas</div><input type="text" class="cfg-input" id="cfg-baseurl" placeholder="https://proposals.digitalplane.pt" /></div>
-      <div class="cfg-field"><div class="cfg-label">Make Webhook (aceite)</div><input type="text" class="cfg-input" id="cfg-webhook" placeholder="https://hook.eu1.make.com/..." /></div>
-      <button class="cfg-save" onclick="saveCfg()">Guardar Configuração</button>
+      <div class="cfg-field"><div class="cfg-label">Anthropic API Key</div><input type="password" class="cfg-input" id="cfg-anthropic-d" placeholder="sk-ant-..."/></div>
+      <div class="cfg-field"><div class="cfg-label">GitHub Token</div><input type="password" class="cfg-input" id="cfg-github-d" placeholder="ghp_..."/></div>
+      <div class="cfg-field"><div class="cfg-label">GitHub Repo</div><input type="text" class="cfg-input" id="cfg-repo-d" placeholder="tomas/dp-proposals"/></div>
+      <div class="cfg-field"><div class="cfg-label">Base URL</div><input type="text" class="cfg-input" id="cfg-baseurl-d" placeholder="https://proposals.digitalplane.pt"/></div>
+      <div class="cfg-field"><div class="cfg-label">Make Webhook</div><input type="text" class="cfg-input" id="cfg-webhook-d" placeholder="https://hook.eu1.make.com/..."/></div>
+      <button class="cfg-save" onclick="saveCfg('d')">Guardar Configuração</button>
     </div>
   </aside>
 
-  <main class="main">
-    <div class="topbar">
-      <div class="page-title" id="page-title">Nova Proposta</div>
-      <div class="status-badge" id="status-badge"><div class="status-dot"></div><span id="status-text">Pronto</span></div>
+  <!-- CONTENT WRAP -->
+  <div class="content-wrap" id="content-wrap">
+
+    <!-- STEP TABS (mobile) -->
+    <div class="step-tabs">
+      <div class="step-tab active" data-step="1" onclick="goStep(1)">01 Cliente</div>
+      <div class="step-tab" data-step="2" onclick="goStep(2)">02 Notas</div>
+      <div class="step-tab" data-step="3" onclick="goStep(3)">03 Oferta</div>
+      <div class="step-tab" data-step="4" onclick="goStep(4)">04 Gerar</div>
     </div>
 
-    <div class="content-area" id="content-area">
-      <div class="form-pane">
+    <div class="content" id="content">
 
-        <!-- STEP 1 -->
-        <div class="panel active" id="panel-1">
-          <div class="panel-eyebrow">Passo 01</div>
-          <div class="panel-title">Dados do Cliente</div>
-          <div class="panel-desc">Informação básica sobre quem recebe a proposta.</div>
-          <div class="form-grid">
-            <div class="field"><label class="field-label">Nome *</label><input type="text" class="field-input" id="client-name" placeholder="Ricardo Matos" /></div>
-            <div class="field"><label class="field-label">Empresa</label><input type="text" class="field-input" id="client-company" placeholder="Pireza" /></div>
-            <div class="field"><label class="field-label">Email</label><input type="email" class="field-input" id="client-email" placeholder="ricardo@pireza.pt" /></div>
-            <div class="field"><label class="field-label">Setor</label><input type="text" class="field-input" id="client-sector" placeholder="Imobiliário, SaaS..." /></div>
-          </div>
-          <div class="actions"><button class="btn btn-primary" onclick="goStep(2)">Seguinte →</button></div>
+      <!-- STEP 1 -->
+      <div class="panel active" id="panel-1">
+        <div class="panel-eyebrow">Passo 01</div>
+        <div class="panel-title">Dados do Cliente</div>
+        <div class="panel-desc">Informação básica sobre quem recebe a proposta.</div>
+        <div class="field"><label class="field-label">Nome *</label><input type="text" class="field-input" id="client-name" placeholder="Ricardo Matos" autocomplete="off"/></div>
+        <div class="field"><label class="field-label">Empresa</label><input type="text" class="field-input" id="client-company" placeholder="Pireza" autocomplete="off"/></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Email</label><input type="email" class="field-input" id="client-email" placeholder="ricardo@pireza.pt"/></div>
+          <div class="field"><label class="field-label">Setor</label><input type="text" class="field-input" id="client-sector" placeholder="Imobiliário..."/></div>
         </div>
-
-        <!-- STEP 2 -->
-        <div class="panel" id="panel-2">
-          <div class="panel-eyebrow">Passo 02</div>
-          <div class="panel-title">Notas da Reunião</div>
-          <div class="panel-desc">Cola o resumo do Granola. Claude extrai o contexto e a linguagem do cliente.</div>
-          <div class="granola-hint"><span class="granola-hint-icon">◎</span><span class="granola-hint-text">Mid-call pede um resumo ao Granola e cola aqui. Quanto mais detalhe, melhor o output.</span></div>
-          <div class="field" style="margin-bottom:1rem;"><label class="field-label">Resumo do Granola *</label><textarea class="field-textarea tall" id="granola-notes" placeholder="Cola aqui o resumo gerado pelo Granola..."></textarea></div>
-          <div class="field"><label class="field-label">Contexto adicional (opcional)</label><textarea class="field-textarea" id="extra-context" placeholder="Tom da conversa, objeções, detalhes que o Granola pode não ter captado..."></textarea></div>
-          <div class="actions"><button class="btn btn-ghost" onclick="goStep(1)">← Voltar</button><button class="btn btn-primary" onclick="goStep(3)">Seguinte →</button></div>
+        <div class="actions">
+          <button class="btn btn-primary btn-full" onclick="goStep(2)">Seguinte →</button>
         </div>
-
-        <!-- STEP 3 -->
-        <div class="panel" id="panel-3">
-          <div class="panel-eyebrow">Passo 03</div>
-          <div class="panel-title">Oferta & Investimento</div>
-          <div class="panel-desc">Define o que está a ser proposto e as condições comerciais.</div>
-          <div class="form-grid">
-            <div class="field"><label class="field-label">Nome da Oferta *</label><input type="text" class="field-input" id="offer-name" placeholder="Content Accelerator" /></div>
-            <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="offer-duration" placeholder="3 meses" /></div>
-            <div class="field"><label class="field-label">Preço *</label><input type="text" class="field-input" id="offer-price" placeholder="4.800" /></div>
-            <div class="field"><label class="field-label">Moeda</label><select class="field-select" id="offer-currency"><option value="€">€ EUR</option><option value="AED">AED</option><option value="$">$ USD</option><option value="£">£ GBP</option></select></div>
-            <div class="field"><label class="field-label">Pagamento</label><input type="text" class="field-input" id="offer-payment" placeholder="50% entrada · 50% no 2.º mês" /></div>
-            <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start" placeholder="Mediante acordo" /></div>
-            <div class="field full"><label class="field-label">Entregáveis (um por linha)</label><textarea class="field-textarea" id="offer-deliverables" placeholder="Sessão de estratégia&#10;8 vídeos curtos/mês&#10;2 vídeos longos/mês&#10;VSL de conversão&#10;Follow-up mensal"></textarea></div>
-          </div>
-          <div class="actions"><button class="btn btn-ghost" onclick="goStep(2)">← Voltar</button><button class="btn btn-primary" onclick="goStep(4)">Seguinte →</button></div>
-        </div>
-
-        <!-- STEP 4 -->
-        <div class="panel" id="panel-4">
-          <div class="panel-eyebrow">Passo 04</div>
-          <div class="panel-title">Gerar & Deploy</div>
-          <div class="panel-desc">Um clique. Claude gera o copy, injeta no template e a proposta fica live.</div>
-
-          <div id="idle-state">
-            <button class="btn btn-primary" onclick="runPipeline()">Gerar & Publicar Proposta</button>
-            <div class="actions" style="margin-top:0.5rem;"><button class="btn btn-ghost" onclick="goStep(3)">← Rever Oferta</button></div>
-          </div>
-
-          <div class="gen-loading" id="loading-state">
-            <div class="spinner"></div>
-            <div><div class="gen-label" id="loading-label">A gerar...</div><div class="gen-sub" id="loading-sub"></div></div>
-          </div>
-
-          <div class="result-block" id="result-block">
-            <div class="url-card" id="url-card">
-              <div class="url-card-label">✓ Proposta publicada</div>
-              <div class="url-val" id="proposal-url" onclick="copyUrl()">—</div>
-              <div class="url-hint">Clica para copiar</div>
-              <div class="url-actions">
-                <button class="btn btn-primary" onclick="openProposal()">Abrir ↗</button>
-                <button class="btn btn-ghost" onclick="copyUrl()">Copiar Link</button>
-                <button class="btn btn-ghost" onclick="location.reload()">Nova Proposta</button>
-              </div>
-            </div>
-
-            <div class="feedback-block">
-              <div class="fb-eyebrow">Revisão</div>
-              <div class="fb-title">Algo a Ajustar?</div>
-              <div class="fb-desc">Diz o que queres mudar. Claude ajusta e republica — a URL mantém-se. A preview actualiza em tempo real.</div>
-              <div class="fb-history" id="fb-history"></div>
-              <div class="fb-examples">
-                <span class="fb-chip" onclick="setFb(this)">Tom demasiado formal</span>
-                <span class="fb-chip" onclick="setFb(this)">Quote do cliente não está certa</span>
-                <span class="fb-chip" onclick="setFb(this)">Mais urgência no investimento</span>
-                <span class="fb-chip" onclick="setFb(this)">Simplifica os entregáveis</span>
-                <span class="fb-chip" onclick="setFb(this)">Desafio mais específico</span>
-              </div>
-              <textarea class="fb-textarea" id="fb-input" placeholder="Ex: A secção do desafio não captura bem o problema principal. Ele mencionou que o maior problema é a falta de leads qualificados. Ajusta e torna o tom mais direto..."></textarea>
-              <div class="actions" style="margin-top:0.75rem;">
-                <button class="btn btn-primary" id="fb-btn" onclick="applyFeedback()">Aplicar & Republicar</button>
-                <button class="btn btn-ghost" onclick="document.getElementById('fb-input').value=''">Limpar</button>
-              </div>
-            </div>
-
-            <div class="log-block" id="log-block" style="display:none;">
-              <div class="log-title">Log</div>
-              <div class="log-lines" id="log-lines"></div>
-            </div>
-          </div>
-        </div>
-
       </div>
 
-      <!-- PREVIEW -->
-      <div class="preview-pane" id="preview-pane">
-        <div class="preview-topbar">
-          <span class="preview-label">Pré-visualização</span>
+      <!-- STEP 2 -->
+      <div class="panel" id="panel-2">
+        <div class="panel-eyebrow">Passo 02</div>
+        <div class="panel-title">Notas da Reunião</div>
+        <div class="panel-desc">Cola o resumo do Granola ou usa o microfone para ditar os pontos principais da call.</div>
+        <div class="granola-hint"><span class="granola-hint-icon">◎</span><span class="granola-hint-text">Pede um resumo ao Granola mid-call e cola aqui. Ou usa o microfone para ditar directamente.</span></div>
+        <div class="field">
+          <label class="field-label">Resumo / Notas *</label>
+          <div class="field-with-voice">
+            <textarea class="field-textarea tall" id="granola-notes" placeholder="Cola o resumo do Granola ou dita as notas da call..."></textarea>
+            <button class="voice-btn" id="voice-notes" onclick="toggleVoice('granola-notes','voice-notes','voice-notes-status')" title="Ditar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            </button>
+          </div>
+          <div class="voice-status" id="voice-notes-status">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            A gravar...
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Contexto adicional (opcional)</label>
+          <textarea class="field-textarea" id="extra-context" placeholder="Tom da conversa, objeções, detalhes que o Granola pode não ter captado..."></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="goStep(1)">← Voltar</button>
+          <button class="btn btn-primary" onclick="goStep(3)">Seguinte →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="panel" id="panel-3">
+        <div class="panel-eyebrow">Passo 03</div>
+        <div class="panel-title">Oferta & Investimento</div>
+        <div class="panel-desc">Define o que está a ser proposto e as condições comerciais.</div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Nome da Oferta *</label><input type="text" class="field-input" id="offer-name" placeholder="Content Accelerator"/></div>
+          <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="offer-duration" placeholder="3 meses"/></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Preço *</label><input type="text" class="field-input" id="offer-price" placeholder="4.800" inputmode="decimal"/></div>
+          <div class="field"><label class="field-label">Moeda</label>
+            <select class="field-select" id="offer-currency">
+              <option value="€">€ EUR</option>
+              <option value="AED">AED</option>
+              <option value="$">$ USD</option>
+              <option value="£">£ GBP</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">Pagamento</label><input type="text" class="field-input" id="offer-payment" placeholder="50% + 50%"/></div>
+          <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start" placeholder="Abril 2026"/></div>
+        </div>
+        <div class="field">
+          <label class="field-label">Entregáveis (um por linha)</label>
+          <textarea class="field-textarea" id="offer-deliverables" placeholder="Sessão de estratégia&#10;8 vídeos curtos/mês&#10;2 vídeos longos/mês&#10;VSL de conversão&#10;Follow-up mensal"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="goStep(2)">← Voltar</button>
+          <button class="btn btn-primary" onclick="goStep(4)">Seguinte →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="panel" id="panel-4">
+        <div class="panel-eyebrow">Passo 04</div>
+        <div class="panel-title">Gerar & Deploy</div>
+        <div class="panel-desc">Um clique. Claude gera o copy, injeta no template e a proposta fica live.</div>
+
+        <div id="idle-state">
+          <button class="btn btn-primary btn-full" onclick="runPipeline()">Gerar & Publicar Proposta</button>
+          <div class="actions"><button class="btn btn-ghost" onclick="goStep(3)">← Rever Oferta</button></div>
+        </div>
+
+        <div class="gen-loading" id="loading-state">
+          <div class="spinner"></div>
+          <div><div class="gen-label" id="loading-label">A gerar...</div><div class="gen-sub" id="loading-sub"></div></div>
+        </div>
+
+        <div class="result-block" id="result-block">
+          <div class="url-card" id="url-card">
+            <div class="url-card-label">✓ Proposta publicada</div>
+            <div class="url-val" id="proposal-url" onclick="copyUrl()">—</div>
+            <div class="url-hint">Toca para copiar</div>
+            <div class="url-actions">
+              <button class="btn btn-primary" onclick="openProposal()">Abrir ↗</button>
+              <button class="btn btn-ghost" onclick="copyUrl()">Copiar</button>
+              <button class="btn btn-ghost" onclick="togglePreview()">Preview</button>
+              <button class="btn btn-ghost" onclick="location.reload()">Nova</button>
+            </div>
+          </div>
+
+          <!-- FEEDBACK -->
+          <div class="feedback-block">
+            <div class="fb-eyebrow">Revisão</div>
+            <div class="fb-title">Algo a Ajustar?</div>
+            <div class="fb-desc">Diz o que queres mudar ou dita com o microfone. Claude ajusta e republica.</div>
+            <div class="fb-history" id="fb-history"></div>
+            <div class="fb-chips">
+              <span class="fb-chip" onclick="setFb(this)">Tom demasiado formal</span>
+              <span class="fb-chip" onclick="setFb(this)">Quote do cliente não está certa</span>
+              <span class="fb-chip" onclick="setFb(this)">Mais urgência no investimento</span>
+              <span class="fb-chip" onclick="setFb(this)">Simplifica os entregáveis</span>
+              <span class="fb-chip" onclick="setFb(this)">Desafio mais específico</span>
+            </div>
+            <div class="fb-field">
+              <textarea class="fb-textarea" id="fb-input" placeholder="Ex: A secção do desafio não captura bem o problema. Ajusta e torna o tom mais direto..."></textarea>
+              <button class="fb-voice-btn" id="voice-fb" onclick="toggleVoice('fb-input','voice-fb','voice-fb-status')" title="Ditar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+              </button>
+            </div>
+            <div class="voice-status" id="voice-fb-status">
+              <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+              A gravar...
+            </div>
+            <div class="actions" style="margin-top:0.75rem;">
+              <button class="btn btn-primary btn-full" id="fb-btn" onclick="applyFeedback()">Aplicar & Republicar</button>
+            </div>
+          </div>
+
+          <div class="log-block" id="log-block" style="display:none;">
+            <div class="log-title">Log</div>
+            <div class="log-lines" id="log-lines"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- PREVIEW PANE (desktop) -->
+    <div class="preview-pane" id="preview-pane">
+      <div class="preview-topbar">
+        <span class="preview-label">Pré-visualização</span>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
           <span class="preview-badge" id="preview-version">v1</span>
+          <button class="preview-close" onclick="togglePreview()">×</button>
         </div>
-        <iframe class="preview-frame" id="preview-frame"></iframe>
       </div>
+      <iframe class="preview-frame" id="preview-frame"></iframe>
     </div>
-  </main>
+
+  </div><!-- /content-wrap -->
+
+</div><!-- /app -->
+
+<!-- SETTINGS DRAWER (mobile) -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Configuração</div>
+  <div class="drawer-body">
+    <div class="cfg-field"><div class="cfg-label">Anthropic API Key</div><input type="password" class="cfg-input" id="cfg-anthropic-m" placeholder="sk-ant-..."/></div>
+    <div class="cfg-field"><div class="cfg-label">GitHub Token</div><input type="password" class="cfg-input" id="cfg-github-m" placeholder="ghp_..."/></div>
+    <div class="cfg-field"><div class="cfg-label">GitHub Repo (user/repo)</div><input type="text" class="cfg-input" id="cfg-repo-m" placeholder="tomas/dp-proposals"/></div>
+    <div class="cfg-field"><div class="cfg-label">Base URL das Propostas</div><input type="text" class="cfg-input" id="cfg-baseurl-m" placeholder="https://proposals.digitalplane.pt"/></div>
+    <div class="cfg-field"><div class="cfg-label">Make Webhook (aceite)</div><input type="text" class="cfg-input" id="cfg-webhook-m" placeholder="https://hook.eu1.make.com/..."/></div>
+    <button class="cfg-save" onclick="saveCfg('m')">Guardar Configuração</button>
+  </div>
 </div>
 
 <script>
+// ── PASSWORD ──
 const APP_PASSWORD = 'simba';
-
 function unlock() {
   if (document.getElementById('lock-input').value === APP_PASSWORD) {
     document.getElementById('lock').classList.add('hidden');
@@ -337,49 +471,85 @@ function unlock() {
   }
 }
 
+// ── STATE ──
 const S = { proposalUrl:null, generatedHTML:null, currentContent:null, inputs:null, revisionCount:0, feedbackHistory:[] };
 
-function saveCfg() {
-  ['anthropic','github','repo','baseurl','webhook'].forEach(k => localStorage.setItem('dp_'+k, document.getElementById('cfg-'+k).value.trim()));
-  const btn = document.querySelector('.cfg-save');
-  btn.textContent = 'Guardado ✓';
-  setTimeout(() => btn.textContent = 'Guardar Configuração', 2000);
+// ── CONFIG ──
+const CFG_KEYS = ['anthropic','github','repo','baseurl','webhook'];
+function saveCfg(suffix) {
+  CFG_KEYS.forEach(k => {
+    const el = document.getElementById('cfg-'+k+'-'+suffix);
+    if (el) {
+      localStorage.setItem('dp_'+k, el.value.trim());
+      // sync the other suffix
+      const other = suffix === 'm' ? 'd' : 'm';
+      const otherEl = document.getElementById('cfg-'+k+'-'+other);
+      if (otherEl) otherEl.value = el.value.trim();
+    }
+  });
+  const btns = document.querySelectorAll('.cfg-save');
+  btns.forEach(b => { b.textContent = 'Guardado ✓'; setTimeout(() => b.textContent = 'Guardar Configuração', 2000); });
+  closeDrawer();
 }
-
 function loadCfg() {
-  ['anthropic','github','repo','baseurl','webhook'].forEach(k => {
-    const el = document.getElementById('cfg-'+k);
-    if (el) el.value = localStorage.getItem('dp_'+k) || '';
+  CFG_KEYS.forEach(k => {
+    const v = localStorage.getItem('dp_'+k) || '';
+    ['m','d'].forEach(s => { const el = document.getElementById('cfg-'+k+'-'+s); if (el) el.value = v; });
   });
 }
-
 function cfg(k) { return localStorage.getItem('dp_'+k) || ''; }
 
+// ── DRAWER ──
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ── NAV ──
 function goStep(n) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-'+n).classList.add('active');
-  document.querySelectorAll('.step-item').forEach(s => {
+  // mobile tabs
+  document.querySelectorAll('.step-tab').forEach(t => {
+    const tn = parseInt(t.dataset.step);
+    t.classList.toggle('active', tn===n);
+    t.classList.toggle('done', tn<n);
+  });
+  // desktop steps
+  document.querySelectorAll('.desktop-step').forEach(s => {
     const sn = parseInt(s.dataset.step);
     s.classList.toggle('active', sn===n);
     s.classList.toggle('done', sn<n);
-    s.querySelector('.step-tag').textContent = sn<n ? '✓' : '0'+sn;
+    s.querySelector('.ds-tag').textContent = sn<n ? '✓' : '0'+sn;
   });
+  document.getElementById('content').scrollTop = 0;
 }
 
+// ── STATUS ──
 function setStatus(state, text) {
   document.getElementById('status-badge').className = 'status-badge '+state;
   document.getElementById('status-text').textContent = text;
 }
 
+// ── LOG ──
 function log(msg, type) {
   document.getElementById('log-block').style.display = 'block';
   const t = new Date().toLocaleTimeString('pt-PT');
   const line = document.createElement('div');
   line.className = 'log-line '+(type||'');
   line.innerHTML = `<span class="log-time">${t}</span><span>${msg}</span>`;
-  document.getElementById('log-lines').appendChild(line);
+  const lines = document.getElementById('log-lines');
+  lines.appendChild(line);
+  lines.scrollTop = lines.scrollHeight;
 }
 
+// ── LOADING ──
 function showLoading(label, sub) {
   document.getElementById('idle-state').style.display = 'none';
   document.getElementById('result-block').classList.remove('show');
@@ -387,33 +557,35 @@ function showLoading(label, sub) {
   document.getElementById('loading-label').textContent = label||'A gerar...';
   document.getElementById('loading-sub').textContent = sub||'';
 }
-
 function hideLoading() { document.getElementById('loading-state').classList.remove('show'); }
 
+// ── PREVIEW ──
 function updatePreview(html, v) {
-  document.getElementById('preview-pane').classList.add('show');
-  document.getElementById('content-area').classList.add('with-preview');
   const blob = new Blob([html], {type:'text/html'});
   document.getElementById('preview-frame').src = URL.createObjectURL(blob);
   document.getElementById('preview-version').textContent = 'v'+v;
 }
-
-function ensureHttps(url) { return url && !url.startsWith('http') ? 'https://'+url : url; }
-
-function copyUrl() {
-  if (!S.proposalUrl) return;
-  navigator.clipboard.writeText(S.proposalUrl);
-  const el = document.getElementById('proposal-url');
-  const orig = el.textContent;
-  el.textContent = 'Copiado!';
-  setTimeout(() => el.textContent = orig, 1500);
+function togglePreview() {
+  const pane = document.getElementById('preview-pane');
+  const wrap = document.getElementById('content-wrap');
+  const showing = pane.classList.contains('show');
+  pane.classList.toggle('show', !showing);
+  wrap.classList.toggle('with-preview', !showing);
 }
 
+// ── URL ──
+function ensureHttps(url) { return url && !url.startsWith('http') ? 'https://'+url : url; }
+function copyUrl() {
+  if (!S.proposalUrl) return;
+  navigator.clipboard.writeText(S.proposalUrl).catch(() => {});
+  const el = document.getElementById('proposal-url');
+  const orig = el.textContent; el.textContent = 'Copiado!';
+  setTimeout(() => el.textContent = orig, 1500);
+}
 function openProposal() {
   if (!S.proposalUrl) return;
   window.open(ensureHttps(S.proposalUrl), '_blank');
 }
-
 function showResult(url) {
   hideLoading();
   document.getElementById('idle-state').style.display = 'none';
@@ -422,17 +594,14 @@ function showResult(url) {
   S.proposalUrl = url;
   setStatus('live', 'Live ✓');
 }
-
 function flashUrlCard() {
   const c = document.getElementById('url-card');
   c.classList.add('flash');
   setTimeout(() => c.classList.remove('flash'), 600);
 }
 
-function slugify(str) {
-  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
-}
-
+// ── HELPERS ──
+function slugify(str) { return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-'); }
 function today() { return new Date().toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric'}); }
 function expiry() { const d=new Date(); d.setDate(d.getDate()+14); return d.toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric'}); }
 
@@ -453,6 +622,73 @@ function collectInputs() {
   };
 }
 
+// ── SPEECH TO TEXT ──
+let activeRecognition = null;
+function toggleVoice(targetId, btnId, statusId) {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('O teu browser não suporta reconhecimento de voz. Usa Chrome ou Edge.');
+    return;
+  }
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById(statusId);
+  // If already recording this field, stop
+  if (activeRecognition && btn.classList.contains('recording')) {
+    activeRecognition.stop();
+    return;
+  }
+  // Stop any other active recording
+  if (activeRecognition) activeRecognition.stop();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SR();
+  recognition.lang = 'pt-PT';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  activeRecognition = recognition;
+  const target = document.getElementById(targetId);
+  const existingText = target.value;
+  let interim = '';
+  btn.classList.add('recording');
+  status.classList.add('show');
+  recognition.onresult = (e) => {
+    let final = '';
+    interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    target.value = existingText + (existingText && final ? '\n' : '') + final + interim;
+    target.scrollTop = target.scrollHeight;
+  };
+  recognition.onend = () => {
+    btn.classList.remove('recording');
+    status.classList.remove('show');
+    activeRecognition = null;
+    // Remove interim text on end
+    target.value = target.value.replace(interim, '').trim();
+  };
+  recognition.onerror = (e) => {
+    btn.classList.remove('recording');
+    status.classList.remove('show');
+    activeRecognition = null;
+    if (e.error !== 'aborted') console.warn('Speech error:', e.error);
+  };
+  recognition.start();
+}
+
+// ── FEEDBACK ──
+function setFb(el) { document.getElementById('fb-input').value=el.textContent; document.getElementById('fb-input').focus(); }
+function renderFbHistory() {
+  const c=document.getElementById('fb-history');
+  c.innerHTML='';
+  S.feedbackHistory.forEach((fb,i)=>{
+    const el=document.createElement('div');
+    el.className='fb-item';
+    el.innerHTML=`<div class="fb-item-meta">Revisão ${i+1} · aplicada</div>${fb}`;
+    c.appendChild(el);
+  });
+}
+
+// ── CLAUDE API ──
 async function callClaude(inputs) {
   const prompt = `És o assistente de propostas da Digital Plane, uma agência de conteúdo estratégico premium baseada em Lisboa e Dubai.
 
@@ -472,29 +708,15 @@ ${inputs.granolaNotes}
 ${inputs.extraContext?'\nCONTEXTO ADICIONAL:\n'+inputs.extraContext:''}
 
 Analisa o contexto e determina o investment_type correcto:
-- "simple": oferta única com preço fixo (ex: Content Accelerator)
-- "multi_pillar": múltiplos pilares com preços distintos (ex: Marca Pessoal + Marca Empresarial)
+- "simple": oferta única com preço fixo
+- "multi_pillar": múltiplos pilares com preços distintos
 - "revenue_share": inclui componente de revenue share além de retainer fixo
 
 Responde APENAS com JSON válido (sem markdown, sem backticks):
-{
-  "hero_subtitle":"...",
-  "challenge_quote":"...",
-  "challenge_body":"<p>...</p><p>...</p>",
-  "approach_body":"<p>...</p>",
-  "deliverables":[{"num":"01","name":"...","desc":"..."}],
-  "timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],
-  "investment_type":"simple",
-  "investment_context":"...",
-  "pillars":[{"name":"...","price":"...","currency":"€","period":"mês","includes":["..."]}],
-  "revenue_share":[{"label":"...","value":"...","basis":"..."}],
-  "total_retainer":"",
-  "payment_structure":"...",
-  "start_date":"..."
-}
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"<p>...</p><p>...</p>","approach_body":"<p>...</p>","deliverables":[{"num":"01","name":"...","desc":"..."}],"timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],"investment_type":"simple","investment_context":"...","pillars":[{"name":"...","price":"...","currency":"€","period":"mês","includes":["..."]}],"revenue_share":[{"label":"...","value":"...","basis":"..."}],"total_retainer":"","payment_structure":"...","start_date":"..."}
 
-Para investment_type "simple": preenche só investment_context, payment_structure, start_date. pillars e revenue_share ficam vazios.
-Para "multi_pillar": preenche pillars com cada pilar. total_retainer é a soma. revenue_share fica vazio.
+Para "simple": só investment_context, payment_structure, start_date. pillars e revenue_share vazios.
+Para "multi_pillar": preenche pillars, total_retainer. revenue_share vazio.
 Para "revenue_share": preenche pillars, total_retainer E revenue_share.
 3-5 entregáveis, 4-5 fases. Adapta ao contexto específico desta call.`;
 
@@ -522,8 +744,8 @@ ${histText}
 
 FEEDBACK: "${feedback}"
 
-Aplica apenas o que o feedback pede. Mantém tudo o resto.
-Responde APENAS com JSON completo actualizado (sem markdown). Mantém o mesmo investment_type e estrutura de pillars/revenue_share do conteúdo actual. Só modifica o que o feedback pede:
+Aplica apenas o que o feedback pede. Mantém tudo o resto. Mantém o mesmo investment_type e estrutura de pillars/revenue_share.
+Responde APENAS com JSON completo actualizado (sem markdown):
 {"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_type":"...","investment_context":"...","pillars":[...],"revenue_share":[...],"total_retainer":"...","payment_structure":"...","start_date":"..."}`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -537,68 +759,42 @@ Responde APENAS com JSON completo actualizado (sem markdown). Mantém o mesmo in
   return JSON.parse(text);
 }
 
+// ── BUILD INVESTMENT HTML ──
 function buildInvestmentHTML(inputs, content) {
-  const type = content.investment_type || "simple";
-  const payStruct = content.payment_structure || inputs.offerPayment || "50% entrada · 50% no início do 2.º mês";
-  const startDate = content.start_date || inputs.offerStart || "Mediante acordo";
-
-  if (type === "simple") {
-    return `<div class="investment-card fade-up">
-<div class="investment-label">Investimento Total</div>
-<div class="investment-price"><sup>${inputs.offerCurrency}</sup>${inputs.offerPrice}</div>
-<div class="investment-terms">
-<div class="term-row"><span class="term-key">Duração</span><span class="term-val">${inputs.offerDuration||"3 meses"}</span></div>
-<div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div>
-<div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div>
-<div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div>
-</div></div>`;
+  const type = content.investment_type || 'simple';
+  const payStruct = content.payment_structure || inputs.offerPayment || '50% entrada · 50% no início do 2.º mês';
+  const startDate = content.start_date || inputs.offerStart || 'Mediante acordo';
+  if (type === 'simple') {
+    return `<div class="investment-card fade-up"><div class="investment-label">Investimento Total</div><div class="investment-price"><sup>${inputs.offerCurrency}</sup>${inputs.offerPrice}</div><div class="investment-terms"><div class="term-row"><span class="term-key">Duração</span><span class="term-val">${inputs.offerDuration||'3 meses'}</span></div><div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div><div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div><div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div></div></div>`;
   }
-
-  // multi_pillar or revenue_share
   const pillars = (content.pillars||[]).map(p => {
-    const inc = (p.includes||[]).map(i=>`<li>${i}</li>`).join("");
-    return `<div class="pillar-card fade-up">
-<div class="pillar-header"><div class="pillar-name">${p.name}</div><div class="pillar-price"><sup>${p.currency||"€"}</sup>${p.price}<span class="pillar-period">/${p.period||"mês"}</span></div></div>
-${inc ? `<ul class="pillar-includes">${inc}</ul>` : ""}
-</div>`;
-  }).join("");
-
-  const revShare = (content.revenue_share||[]).length > 0 ? `
-<div class="rev-share-block fade-up">
-<div class="rev-share-label">Revenue Share</div>
-${(content.revenue_share||[]).map(r=>`<div class="rev-row"><span class="rev-label">${r.label}</span><span class="rev-val">${r.value} <span class="rev-basis">${r.basis}</span></span></div>`).join("")}
-<div class="rev-note">Este modelo garante alinhamento total entre o esforço da Digital Plane e os teus resultados — crescemos juntos.</div>
-</div>` : "";
-
-  const total = content.total_retainer ? `<div class="total-retainer fade-up"><span class="total-label">Retainer Total</span><span class="total-val">€${content.total_retainer}<span class="total-period">/mês</span></span></div>` : "";
-
-  return `<div class="pillars-wrap">${pillars}</div>
-${total}
-${revShare}
-<div class="investment-terms-simple fade-up">
-<div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div>
-<div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div>
-<div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div>
-</div>`;
+    const inc = (p.includes||[]).map(i=>`<li>${i}</li>`).join('');
+    return `<div class="pillar-card fade-up"><div class="pillar-header"><div class="pillar-name">${p.name}</div><div class="pillar-price"><sup>${p.currency||'€'}</sup>${p.price}<span class="pillar-period">/${p.period||'mês'}</span></div></div>${inc?`<ul class="pillar-includes">${inc}</ul>`:''}</div>`;
+  }).join('');
+  const revShare = (content.revenue_share||[]).length > 0 ? `<div class="rev-share-block fade-up"><div class="rev-share-label">Revenue Share</div>${(content.revenue_share||[]).map(r=>`<div class="rev-row"><span class="rev-label">${r.label}</span><span class="rev-val">${r.value} <span class="rev-basis">${r.basis}</span></span></div>`).join('')}<div class="rev-note">Este modelo garante alinhamento total entre o esforço da Digital Plane e os teus resultados — crescemos juntos.</div></div>` : '';
+  const total = content.total_retainer ? `<div class="total-retainer fade-up"><span class="total-label">Retainer Total</span><span class="total-val">€${content.total_retainer}<span class="total-period">/mês</span></span></div>` : '';
+  return `<div class="pillars-wrap">${pillars}</div>${total}${revShare}<div class="investment-terms-simple fade-up"><div class="term-row"><span class="term-key">Pagamento</span><span class="term-val">${payStruct}</span></div><div class="term-row"><span class="term-key">Início</span><span class="term-val">${startDate}</span></div><div class="term-row"><span class="term-key">Validade</span><span class="term-val">${expiry()}</span></div></div>`;
 }
 
+// ── BUILD HTML ──
 function buildHTML(inputs, content) {
-  const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join("");
-  const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join("");
+  const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join('');
+  const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join('');
   const investHTML = buildInvestmentHTML(inputs, content);
-  const webhook = cfg("webhook")||"https://hook.eu1.make.com/placeholder";
+  const webhook = cfg('webhook')||'https://hook.eu1.make.com/placeholder';
   return PROPOSAL_TEMPLATE
     .replace(/{{CLIENT_NAME}}/g,inputs.clientName).replace(/{{OFFER_NAME}}/g,inputs.offerName)
     .replace(/{{PROPOSAL_DATE}}/g,today()).replace(/{{EXPIRY_DATE}}/g,expiry())
     .replace(/{{INVESTMENT_HTML}}/g,investHTML)
-    .replace(/{{START_DATE}}/g,content.start_date||inputs.offerStart||"Mediante acordo")
+    .replace(/{{START_DATE}}/g,content.start_date||inputs.offerStart||'Mediante acordo')
     .replace(/{{HERO_SUBTITLE}}/g,content.hero_subtitle).replace(/{{CHALLENGE_QUOTE}}/g,content.challenge_quote)
     .replace(/{{CHALLENGE_BODY}}/g,content.challenge_body).replace(/{{APPROACH_BODY}}/g,content.approach_body)
     .replace(/{{DELIVERABLES_HTML}}/g,delivHTML).replace(/{{TIMELINE_HTML}}/g,timeHTML)
-    .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context||"")
+    .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context||'')
     .replace(/{{MAKE_WEBHOOK_URL}}/g,webhook);
 }
 
+// ── GITHUB ──
 async function pushToGitHub(filename, html) {
   const token=cfg('github'), repo=cfg('repo');
   if (!token||!repo) throw new Error('GitHub não configurado');
@@ -611,8 +807,9 @@ async function pushToGitHub(filename, html) {
   if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(`GitHub ${res.status}: ${e.message}`); }
 }
 
+// ── PIPELINE ──
 async function runPipeline() {
-  if (!cfg('anthropic')) { alert('Falta a Anthropic API Key.'); return; }
+  if (!cfg('anthropic')) { alert('Falta a Anthropic API Key nas configurações.'); return; }
   S.inputs = collectInputs();
   if (!S.inputs.clientName) { alert('Nome do cliente é obrigatório.'); goStep(1); return; }
   if (!S.inputs.granolaNotes) { alert('Cola o resumo do Granola.'); goStep(2); return; }
@@ -661,40 +858,23 @@ async function runPipeline() {
   showResult(url);
 }
 
-function setFb(el) { document.getElementById('fb-input').value=el.textContent; document.getElementById('fb-input').focus(); }
-
-function renderFbHistory() {
-  const c=document.getElementById('fb-history');
-  c.innerHTML='';
-  S.feedbackHistory.forEach((fb,i)=>{
-    const el=document.createElement('div');
-    el.className='fb-item';
-    el.innerHTML=`<div class="fb-item-meta">Revisão ${i+1} · aplicada</div>${fb}`;
-    c.appendChild(el);
-  });
-}
-
+// ── APPLY FEEDBACK ──
 async function applyFeedback() {
   const feedback=document.getElementById('fb-input').value.trim();
   if (!feedback) { alert('Escreve o que queres ajustar.'); return; }
   if (!S.currentContent||!S.inputs) { alert('Gera primeiro uma proposta.'); return; }
-
   const btn=document.getElementById('fb-btn');
   btn.disabled=true; btn.textContent='A aplicar...';
   setStatus('generating','A rever...');
-
   const slug=slugify(S.inputs.clientName+'-'+S.inputs.offerName);
   log(`Revisão ${S.revisionCount+1}: "${feedback.substring(0,50)}..."`, 'info');
-
   try {
     const updated=await callClaudeRevision(S.inputs, S.currentContent, feedback, S.feedbackHistory);
     log('Revisão gerada ✓','ok');
     S.currentContent=updated;
     S.generatedHTML=buildHTML(S.inputs, S.currentContent);
-
     try { await pushToGitHub(slug+'.html', S.generatedHTML); log('Republicado ✓','ok'); }
     catch(e) { log('Aviso GitHub: '+e.message,'err'); }
-
     S.revisionCount++;
     S.feedbackHistory.push(feedback);
     renderFbHistory();
@@ -707,15 +887,15 @@ async function applyFeedback() {
     log('Erro revisão: '+e.message,'err');
     setStatus('error','Erro na revisão');
   }
-
   btn.disabled=false; btn.textContent='Aplicar & Republicar';
 }
 
+// ── PROPOSAL TEMPLATE ──
 const PROPOSAL_TEMPLATE=`<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Proposta — {{CLIENT_NAME}} \xd7 Digital Plane</title>
+<title>Proposta \u2014 {{CLIENT_NAME}} \xd7 Digital Plane</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=DM+Mono:wght@300;400&family=Bebas+Neue&display=swap" rel="stylesheet"/>
 <style>
@@ -728,81 +908,83 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(255,90,0,0.04) 0%,transparent 60%),linear-gradient(180deg,#0a0a0a 0%,#0d0d0d 100%);}
 .hero-line-v{position:absolute;top:0;bottom:0;width:1px;background:var(--border);}
 .hero-line-v:nth-child(1){left:8.33%;}.hero-line-v:nth-child(2){left:50%;}.hero-line-v:nth-child(3){right:8.33%;}
-.hero-nav{position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:2rem 4rem;border-bottom:1px solid var(--border);}
+.hero-nav{position:relative;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:1.5rem 2rem;border-bottom:1px solid var(--border);}
 .logo{font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-secondary);}
-.nav-meta{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;}
-.hero-content{position:relative;z-index:10;display:flex;flex-direction:column;justify-content:center;padding:6rem 4rem;max-width:1100px;}
-.proposal-tag{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:2.5rem;display:flex;align-items:center;gap:1rem;}
+.nav-meta{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;}
+.hero-content{position:relative;z-index:10;display:flex;flex-direction:column;justify-content:center;padding:4rem 2rem;max-width:1100px;}
+.proposal-tag{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:2rem;display:flex;align-items:center;gap:1rem;}
 .proposal-tag::before{content:'';display:block;width:2rem;height:1px;background:var(--accent);}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7.5rem);letter-spacing:0.02em;line-height:0.95;margin-bottom:3rem;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,8vw,7.5rem);letter-spacing:0.02em;line-height:0.95;margin-bottom:2rem;}
 .hero-title em{font-style:italic;color:var(--accent);}
 .hero-subtitle{font-size:1rem;color:var(--text-secondary);max-width:480px;line-height:1.8;font-weight:300;}
 .hero-footer{position:relative;z-index:10;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
-.hero-stat{padding:1.75rem 4rem;border-right:1px solid var(--border);}.hero-stat:last-child{border-right:none;}
-.stat-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.5rem;}
-.stat-value{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;color:var(--text-primary);}
-section{padding:7rem 4rem;border-bottom:1px solid var(--border);position:relative;}
-.section-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:4rem;display:flex;align-items:center;gap:1rem;}
+.hero-stat{padding:1.25rem 2rem;border-right:1px solid var(--border);}.hero-stat:last-child{border-right:none;}
+.stat-label{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.03em;color:var(--text-primary);}
+section{padding:5rem 2rem;border-bottom:1px solid var(--border);position:relative;}
+.section-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:3rem;display:flex;align-items:center;gap:1rem;}
 .section-label::before{content:attr(data-num);color:var(--text-muted);}
-.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.2rem,4vw,3.5rem);letter-spacing:0.02em;line-height:1.1;margin-bottom:2.5rem;max-width:700px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,3.5rem);letter-spacing:0.02em;line-height:1.1;margin-bottom:2rem;max-width:700px;}
 .section-title em{font-style:italic;color:var(--accent);}
 .section-body{font-size:1rem;color:var(--text-secondary);max-width:620px;line-height:1.9;}
 .section-body p+p{margin-top:1.25rem;}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
-.challenge-quote{border-left:1px solid var(--accent);padding:2rem 2.5rem;margin:1rem 0;background:var(--accent-dim2);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+.challenge-quote{border-left:1px solid var(--accent);padding:1.5rem 2rem;margin:1rem 0;background:var(--accent-dim2);}
 .challenge-quote p{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:300;font-style:italic;line-height:1.8;color:var(--text-primary);}
-.deliverables-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:4rem;}
-.deliverable-item{background:var(--black);padding:2.5rem;transition:background 0.3s;}
+.deliverables-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:3rem;}
+.deliverable-item{background:var(--black);padding:2rem;transition:background 0.3s;}
 .deliverable-item:hover{background:var(--surface);}
-.deliverable-num{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);margin-bottom:1.25rem;}
-.deliverable-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.03em;margin-bottom:0.75rem;}
+.deliverable-num{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);margin-bottom:1rem;}
+.deliverable-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.6rem;}
 .deliverable-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
-.timeline{margin-top:4rem;position:relative;}
+.timeline{margin-top:3rem;position:relative;}
 .timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--accent) 0%,var(--border) 100%);}
-.timeline-item{padding:0 0 3.5rem 3rem;position:relative;}
+.timeline-item{padding:0 0 3rem 2.5rem;position:relative;}
 .timeline-item::before{content:'';position:absolute;left:-3px;top:8px;width:7px;height:7px;border-radius:50%;background:var(--accent);}
 .timeline-item:last-child{padding-bottom:0;}
-.timeline-phase{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:0.5rem;}
-.timeline-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.5rem;}
+.timeline-phase{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:0.4rem;}
+.timeline-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.03em;margin-bottom:0.4rem;}
 .timeline-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
 .investment-section{background:var(--surface);}
-.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+.investment-intro{max-width:600px;margin-bottom:2.5rem;}
+.investment-dynamic{width:100%;}
+.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
 .pillar-card{background:var(--black);border:1px solid var(--border-light);padding:2rem;position:relative;overflow:hidden;}
 .pillar-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
 .pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
 .pillar-name{font-family:"Bebas Neue",sans-serif;font-size:1.3rem;letter-spacing:0.03em;line-height:1.1;}
 .pillar-price{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;}
-.pillar-period{font-size:0.6em;color:var(--text-muted);font-family:"DM Mono",monospace;}
+.pillar-price sup{font-size:0.5em;vertical-align:super;font-family:"DM Mono",monospace;}
+.pillar-period{font-size:0.45em;color:var(--text-muted);font-family:"DM Mono",monospace;}
 .pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;}
 .pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
-.pillar-includes li::before{content:"→";position:absolute;left:0;color:var(--accent);font-size:0.7rem;}
+.pillar-includes li::before{content:"\\2192";position:absolute;left:0;color:var(--accent);font-size:0.7rem;}
 .total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2rem;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.2);margin-bottom:1.5rem;}
-.total-label{font-family:"DM Mono",monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);}
+.total-label{font-family:"DM Mono",monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);}
 .total-val{font-family:"Bebas Neue",sans-serif;font-size:2.2rem;letter-spacing:0.02em;color:var(--text-primary);}
 .total-period{font-size:0.35em;color:var(--text-muted);font-family:"DM Mono",monospace;}
 .rev-share-block{border:1px solid var(--border-light);padding:2rem;margin-bottom:1.5rem;}
-.rev-share-label{font-family:"DM Mono",monospace;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
+.rev-share-label{font-family:"DM Mono",monospace;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
 .rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);}
 .rev-row:last-of-type{border-bottom:none;}
 .rev-label{font-size:0.875rem;color:var(--text-secondary);}
 .rev-val{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:0.03em;color:var(--text-primary);}
-.rev-basis{font-family:"DM Mono",monospace;font-size:0.45em;color:var(--text-muted);display:block;text-align:right;margin-top:-4px;}
+.rev-basis{font-family:"DM Mono",monospace;font-size:0.42em;color:var(--text-muted);display:block;text-align:right;}
 .rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1rem;line-height:1.6;}
 .investment-terms-simple{border-top:1px solid var(--border);padding-top:1.5rem;}
-
-.investment-card{border:1px solid var(--border-light);padding:4rem;max-width:700px;position:relative;overflow:hidden;}
+.investment-card{border:1px solid var(--border-light);padding:2.5rem;max-width:700px;position:relative;overflow:hidden;}
 .investment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
 .investment-price{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.5rem);letter-spacing:0.02em;line-height:1;margin:1.5rem 0;}
 .investment-price sup{font-size:0.35em;vertical-align:super;color:var(--accent);font-family:'DM Mono',monospace;}
 .investment-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--text-muted);text-transform:uppercase;}
-.investment-terms{margin-top:2.5rem;padding-top:2.5rem;border-top:1px solid var(--border);}
+.investment-terms{margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border);}
 .term-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);font-size:0.875rem;}
 .term-row:last-child{border-bottom:none;}
 .term-key{color:var(--text-muted);}.term-val{color:var(--text-primary);font-weight:400;}
 .accept-section{background:var(--black);}.accept-inner{max-width:640px;}
-.accept-form{margin-top:3.5rem;display:flex;flex-direction:column;gap:1.5rem;}
+.accept-form{margin-top:3rem;display:flex;flex-direction:column;gap:1.5rem;}
 .field-group{display:flex;flex-direction:column;gap:0.5rem;}
-.field-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.field-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
 .field-input{background:transparent;border:none;border-bottom:1px solid var(--border-light);padding:0.75rem 0;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:1rem;font-weight:300;outline:none;transition:border-color 0.2s;width:100%;}
 .field-input:focus{border-color:var(--accent);}
 .field-input::placeholder{color:var(--text-muted);}
@@ -812,42 +994,26 @@ section{padding:7rem 4rem;border-bottom:1px solid var(--border);position:relativ
 .checkbox-group input:checked+.checkbox-custom{background:var(--accent);border-color:var(--accent);}
 .checkbox-group input:checked+.checkbox-custom::after{content:'';position:absolute;inset:3px;background:var(--black);clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);}
 .checkbox-text{font-size:0.875rem;color:var(--text-secondary);line-height:1.6;}
-.btn-accept{margin-top:1rem;background:var(--accent);color:var(--black);border:none;padding:1.25rem 3rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s,transform 0.2s;align-self:flex-start;}
+.btn-accept{margin-top:1rem;background:var(--accent);color:var(--black);border:none;padding:1.25rem 3rem;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s,transform 0.2s;align-self:flex-start;-webkit-appearance:none;}
 .btn-accept:hover{opacity:0.85;transform:translateY(-1px);}
 .btn-accept:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
-.success-message{display:none;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.3);padding:2rem 2.5rem;margin-top:2rem;}
+.success-message{display:none;background:var(--accent-dim);border:1px solid rgba(255,90,0,0.3);padding:2rem;margin-top:2rem;}
 .success-message.show{display:block;}
 .success-message p{font-size:1rem;font-style:italic;}
-footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);}
-.footer-logo,.footer-meta{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+footer{padding:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;border-top:1px solid var(--border);}
+.footer-logo,.footer-meta{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);}
 .fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
 .fade-up.visible{opacity:1;transform:translateY(0);}
-
-.investment-intro{max-width:600px;margin-bottom:2.5rem;}
-.investment-dynamic{width:100%;}
-.pillars-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px;}
-.pillar-card{background:var(--black);padding:2rem 2.5rem;transition:background 0.2s;}
-.pillar-card:hover{background:var(--surface);}
-.pillar-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;gap:1rem;}
-.pillar-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;}
-.pillar-price{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.02em;color:var(--accent);white-space:nowrap;text-align:right;}
-.pillar-price sup{font-size:0.5em;vertical-align:super;font-family:'DM Mono',monospace;}
-.pillar-period{font-size:0.45em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;}
-.pillar-includes{list-style:none;display:flex;flex-direction:column;gap:0.4rem;padding:0;}
-.pillar-includes li{font-size:0.8rem;color:var(--text-secondary);padding-left:1rem;position:relative;line-height:1.5;}
-.total-retainer{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 2.5rem;background:var(--surface);border:1px solid var(--border-light);border-top:1px solid var(--accent);margin-bottom:1px;}
-.total-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
-.total-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;color:var(--text-primary);}
-.total-period{font-size:0.4em;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:0.1em;margin-left:0.25em;}
-.rev-share-block{background:var(--surface);border:1px solid var(--border-light);padding:2rem 2.5rem;margin-bottom:1px;}
-.rev-share-label{font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;}
-.rev-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.875rem;}
-.rev-label{color:var(--text-secondary);}
-.rev-val{font-weight:400;color:var(--text-primary);text-align:right;}
-.rev-basis{font-size:0.75em;color:var(--text-muted);margin-left:0.3em;}
-.rev-note{font-size:0.78rem;color:var(--text-muted);font-style:italic;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);line-height:1.6;}
-.investment-terms-simple{border:1px solid var(--border-light);padding:1.25rem 2.5rem;background:var(--surface);}
-@media(max-width:768px){.hero-nav,.hero-content{padding:1.5rem;}section{padding:4rem 1.5rem;}.hero-footer{grid-template-columns:1fr;}.hero-stat{padding:1.25rem 1.5rem;border-right:none;border-bottom:1px solid var(--border);}.two-col{grid-template-columns:1fr;gap:3rem;}.investment-card{padding:2rem;}footer{padding:1.5rem;flex-direction:column;gap:1rem;text-align:center;}}
+@media(max-width:768px){
+  .hero-nav{padding:1.25rem 1.5rem;}
+  .hero-content{padding:3rem 1.5rem;}
+  section{padding:3.5rem 1.5rem;}
+  .hero-footer{grid-template-columns:1fr;}
+  .hero-stat{padding:1rem 1.5rem;border-right:none;border-bottom:1px solid var(--border);}
+  .two-col{grid-template-columns:1fr;gap:2rem;}
+  .investment-card{padding:1.5rem;}
+  footer{padding:1.5rem;flex-direction:column;text-align:center;}
+}
 </style>
 </head>
 <body>
@@ -890,22 +1056,26 @@ footer{padding:2.5rem 4rem;display:flex;justify-content:space-between;align-item
 <div class="timeline fade-up">{{TIMELINE_HTML}}</div>
 </div>
 </section>
-<section class="investment-section">\n<div class="section-label" data-num="04">O Investimento</div>\n<div class="investment-intro"><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>\n<div class="investment-dynamic">{{INVESTMENT_HTML}}</div>\n</section>
+<section class="investment-section">
+<div class="section-label" data-num="04">O Investimento</div>
+<div class="investment-intro"><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>
+<div class="investment-dynamic">{{INVESTMENT_HTML}}</div>
+</section>
 <section class="accept-section">
 <div class="accept-inner">
 <div class="section-label" data-num="05">Avan\xe7ar</div>
 <h2 class="section-title">Pronto para <em>come\xe7ar?</em></h2>
-<p class="section-body">Assina abaixo para confirmar a tua aceita\xe7\xe3o desta proposta. Assim que recebermos, enviamos o contrato formal e os pr\xf3ximos passos.</p>
+<p class="section-body">Preenche os dados abaixo para confirmar a tua aceita\xe7\xe3o. Utilizamos esta informa\xe7\xe3o para preparar o contrato formal.</p>
 <div class="accept-form">
-<div class="field-group"><label class="field-label">Nome Completo (quem assina)</label><input type="text" class="field-input" id="sig-name" placeholder="Nome como no documento de identificação"/></div>
-<div class="field-group"><label class="field-label">N.º Cartão de Cidadão / Passaporte</label><input type="text" class="field-input" id="sig-id" placeholder="Ex: 12345678 9 ZZ4"/></div>
-<div class="field-group"><label class="field-label">Nome da Empresa</label><input type="text" class="field-input" id="sig-company" placeholder="Razão social completa"/></div>
-<div class="field-group"><label class="field-label">Morada da Empresa</label><input type="text" class="field-input" id="sig-address" placeholder="Rua, n.º, Código Postal, Cidade"/></div>
+<div class="field-group"><label class="field-label">Nome Completo (quem assina)</label><input type="text" class="field-input" id="sig-name" placeholder="Nome como no documento de identifica\xe7\xe3o"/></div>
+<div class="field-group"><label class="field-label">N.\xba Cart\xe3o de Cidad\xe3o / Passaporte</label><input type="text" class="field-input" id="sig-id" placeholder="Ex: 12345678 9 ZZ4"/></div>
+<div class="field-group"><label class="field-label">Nome da Empresa</label><input type="text" class="field-input" id="sig-company" placeholder="Raz\xe3o social completa"/></div>
+<div class="field-group"><label class="field-label">Morada da Empresa</label><input type="text" class="field-input" id="sig-address" placeholder="Rua, n.\xba, C\xf3digo Postal, Cidade"/></div>
 <div class="field-group"><label class="field-label">NIF / VAT ID</label><input type="text" class="field-input" id="sig-vat" placeholder="Ex: PT 123456789"/></div>
 <div class="field-group"><label class="field-label">Email</label><input type="email" class="field-input" id="sig-email" placeholder="email@empresa.com"/></div>
-<label class="checkbox-group"><input type="checkbox" id="sig-agree"/><span class="checkbox-custom"></span><span class="checkbox-text">Li e aceito os termos desta proposta. Entendo que a Digital Plane irá enviar o contrato formal com base nos dados fornecidos.</span></label>
+<label class="checkbox-group"><input type="checkbox" id="sig-agree"/><span class="checkbox-custom"></span><span class="checkbox-text">Li e aceito os termos desta proposta. Entendo que a Digital Plane ir\xe1 enviar o contrato formal com base nos dados fornecidos.</span></label>
 <button class="btn-accept" id="btn-submit" disabled onclick="handleAccept()">Aceitar Proposta</button>
-<div class="success-message" id="success-msg"><p>Obrigado, {{CLIENT_NAME}}. A tua confirma\xe7\xe3o foi registada. Receber\xe1s o contrato em breve.</p></div>
+<div class="success-message" id="success-msg"><p>Obrigado, {{CLIENT_NAME}}. A tua confirma\xe7\xe3o foi registada. A Raquel entrar\xe1 em contacto em breve com o contrato.</p></div>
 </div>
 </div>
 </section>
@@ -922,12 +1092,14 @@ sb.disabled=true;sb.textContent='A registar...';
 const p={client_name:'{{CLIENT_NAME}}',signer_name:ni.value.trim(),id_number:ii.value.trim(),company_name:ci.value.trim(),company_address:ai2.value.trim(),vat_number:vi.value.trim(),signer_email:ei.value.trim(),proposal:'{{OFFER_NAME}}',accepted_at:new Date().toLocaleString('pt-PT')};
 if(typeof emailjs!=='undefined'){emailjs.send('service_5vnfsgv','proposta-aceite',{to_email:'raquel@digitalplane.pt',client_name:p.client_name,signer_name:p.signer_name,id_number:p.id_number,company_name:p.company_name,company_address:p.company_address,vat_number:p.vat_number,signer_email:p.signer_email,proposal:p.proposal,accepted_at:p.accepted_at}).catch(()=>{});}
 fetch('{{MAKE_WEBHOOK_URL}}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).catch(()=>{});
-sb.textContent='Proposta Aceite ✓';document.getElementById('success-msg').classList.add('show');
+sb.textContent='Proposta Aceite \u2713';document.getElementById('success-msg').classList.add('show');
 }
 <\/script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('U5_GKPJT0ijmt7fLe')"><\/script>
 </body>
 </html>`;
+
+loadCfg();
 </script>
 </body>
 </html>
