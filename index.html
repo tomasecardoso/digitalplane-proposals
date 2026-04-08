@@ -713,14 +713,13 @@ Analisa o contexto e determina o investment_type correcto:
 - "revenue_share": inclui componente de revenue share além de retainer fixo
 
 Responde APENAS com JSON válido (sem markdown, sem backticks):
-{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"<p>...</p><p>...</p>","approach_body":"<p>...</p>","deliverables":[{"num":"01","name":"...","desc":"..."}],"timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],"investment_type":"simple","investment_context":"...","pillars":[{"name":"...","price":"...","currency":"€","period":"mês","includes":["..."]}],"revenue_share":[{"label":"...","value":"...","basis":"..."}],"total_retainer":"","payment_structure":"...","start_date":"...","plan_intro":"...","plan_steps":[{"phase":"...","title":"...","desc":"..."}]}
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"<p>...</p><p>...</p>","approach_body":"<p>...</p>","deliverables":[{"num":"01","name":"...","desc":"..."}],"timeline":[{"phase":"Semana 1","title":"...","desc":"..."}],"investment_type":"simple","investment_context":"...","pillars":[{"name":"...","price":"...","currency":"€","period":"mês","includes":["..."]}],"revenue_share":[{"label":"...","value":"...","basis":"..."}],"total_retainer":"","payment_structure":"...","start_date":"..."}
 
 Para "simple": só investment_context, payment_structure, start_date. pillars e revenue_share vazios.
 Para "multi_pillar": preenche pillars, total_retainer. revenue_share vazio.
 Para "revenue_share": preenche pillars, total_retainer E revenue_share.
 3-5 entregáveis, 4-5 fases. Adapta ao contexto específico desta call.
-plan_intro: 1-2 frases que introduzem o plano específico para este cliente. Tom directo e específico.
-plan_steps: 3-5 passos do plano específico para este cliente (diferentes do timeline genérico). Foca no que é único para este projecto.`;
+`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
@@ -748,7 +747,7 @@ FEEDBACK: "${feedback}"
 
 Aplica apenas o que o feedback pede. Mantém tudo o resto. Mantém o mesmo investment_type e estrutura de pillars/revenue_share.
 Responde APENAS com JSON completo actualizado (sem markdown):
-{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_type":"...","investment_context":"...","pillars":[...],"revenue_share":[...],"total_retainer":"...","payment_structure":"...","start_date":"...","plan_intro":"...","plan_steps":[{"phase":"...","title":"...","desc":"..."}]}`;
+{"hero_subtitle":"...","challenge_quote":"...","challenge_body":"...","approach_body":"...","deliverables":[...],"timeline":[...],"investment_type":"...","investment_context":"...","pillars":[...],"revenue_share":[...],"total_retainer":"...","payment_structure":"...","start_date":"..."}`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
@@ -787,7 +786,6 @@ function buildInvestmentHTML(inputs, content) {
 function buildHTML(inputs, content) {
   const delivHTML = content.deliverables.map(d=>`<div class="deliverable-item"><div class="deliverable-num">${d.num}</div><div class="deliverable-name">${d.name}</div><div class="deliverable-desc">${d.desc}</div></div>`).join('');
   const timeHTML = content.timeline.map(t=>`<div class="timeline-item"><div class="timeline-phase">${t.phase}</div><div class="timeline-title">${t.title}</div><div class="timeline-desc">${t.desc}</div></div>`).join('');
-  const planStepsHTML = (content.plan_steps||[]).map((s,i)=>`<div class="plan-step"><div class="plan-step-num"><span>0${i+1}</span></div><div class="plan-step-body"><div class="plan-step-phase">${s.phase}</div><div class="plan-step-title">${s.title}</div><div class="plan-step-desc">${s.desc}</div></div></div>`).join('');
   const investHTML = buildInvestmentHTML(inputs, content);
   const webhook = cfg('webhook')||'https://hook.eu1.make.com/placeholder';
   return PROPOSAL_TEMPLATE
@@ -799,8 +797,6 @@ function buildHTML(inputs, content) {
     .replace(/{{CHALLENGE_BODY}}/g,content.challenge_body).replace(/{{APPROACH_BODY}}/g,content.approach_body)
     .replace(/{{DELIVERABLES_HTML}}/g,delivHTML).replace(/{{TIMELINE_HTML}}/g,timeHTML)
     .replace(/{{INVESTMENT_CONTEXT}}/g,content.investment_context||'')
-    .replace(/{{PLAN_INTRO}}/g,content.plan_intro||'O plano foi desenhado especificamente para o teu contexto.')
-    .replace(/{{PLAN_STEPS_HTML}}/g,planStepsHTML)
     .replace(/{{MAKE_WEBHOOK_URL}}/g,webhook);
 }
 
@@ -1025,16 +1021,7 @@ footer{padding:2rem;display:flex;justify-content:space-between;align-items:cente
 .client-name{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.03em;margin-bottom:0.2rem;}
 .client-company{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem;}
 .client-tagline{font-size:0.82rem;color:var(--text-secondary);line-height:1.6;}
-/* CUSTOM PLAN SECTION */
-.plan-steps{display:flex;flex-direction:column;gap:0;margin-top:3rem;border:1px solid var(--border);}
-.plan-step{display:grid;grid-template-columns:auto 1fr;border-bottom:1px solid var(--border);}
-.plan-step:last-child{border-bottom:none;}
-.plan-step-num{padding:2rem;border-right:1px solid var(--border);display:flex;align-items:flex-start;justify-content:center;min-width:70px;}
-.plan-step-num span{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;color:var(--accent);line-height:1;}
-.plan-step-body{padding:2rem;}
-.plan-step-phase{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;}
-.plan-step-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.03em;margin-bottom:0.5rem;}
-.plan-step-desc{font-size:0.875rem;color:var(--text-secondary);line-height:1.7;}
+
 @media(max-width:768px){
   .hero-nav{padding:1.25rem 1.5rem;}
   .hero-content{padding:3rem 1.5rem;}
@@ -1118,20 +1105,15 @@ footer{padding:2rem;display:flex;justify-content:space-between;align-items:cente
 </div>
 </div>
 </section>
-<section>
-<div class="section-label" data-num="05">O Plano Para Ti</div>
-<h2 class="section-title">Como <em>vamos</em> trabalhar juntos.</h2>
-<p class="section-body" style="margin-bottom:0;">{PLAN_INTRO}</p>
-<div class="plan-steps">{PLAN_STEPS_HTML}</div>
-</section>
+
 <section class="investment-section">
-<div class="section-label" data-num="06">O Investimento</div>
+<div class="section-label" data-num="05">O Investimento</div>
 <div class="investment-intro"><h2 class="section-title">Claro, <em>direto</em> e sem surpresas.</h2><p class="section-body">{{INVESTMENT_CONTEXT}}</p></div>
 <div class="investment-dynamic">{{INVESTMENT_HTML}}</div>
 </section>
 <section class="accept-section">
 <div class="accept-inner">
-<div class="section-label" data-num="07">Avan\xe7ar</div>
+<div class="section-label" data-num="06">Avan\xe7ar</div>
 <h2 class="section-title">Pronto para <em>come\xe7ar?</em></h2>
 <p class="section-body">Preenche os dados abaixo para confirmar a tua aceita\xe7\xe3o. Utilizamos esta informa\xe7\xe3o para preparar o contrato formal.</p>
 <div class="accept-form">
