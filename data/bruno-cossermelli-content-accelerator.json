@@ -1,0 +1,27 @@
+{
+  "id": "bruno-cossermelli-content-accelerator",
+  "clientName": "Bruno Cossermelli",
+  "clientCompany": "Cosserge",
+  "offerName": "Content Accelerator",
+  "price": "7000",
+  "currency": "€",
+  "url": "https://proposals.digitalplane.pt/proposals/bruno-cossermelli-content-accelerator.html",
+  "createdAt": "2026-04-08T18:06:13.000Z",
+  "updatedAt": "2026-04-08T18:06:13.000Z",
+  "status": "sent",
+  "inputs": {
+    "clientName": "Bruno Cossermelli",
+    "clientCompany": "Cosserge",
+    "clientEmail": "bruno@cosserge.com",
+    "clientSector": "Construção / Imobiliário",
+    "granolaNotes": "",
+    "extraContext": "",
+    "offerName": "Content Accelerator",
+    "offerDuration": "3 meses",
+    "offerPrice": "7000",
+    "offerCurrency": "€",
+    "offerPayment": "3 pagamentos mensais de €2.333",
+    "offerStart": "Abril 2026",
+    "offerDeliverables": "Estratégia, guiões e produção\n15-20 vídeos curtos/mês (a partir do 2º mês)\nEdição completa\nIda à obra incluída\nSem gestão de publicações (Bruno trata)"
+  }
+}

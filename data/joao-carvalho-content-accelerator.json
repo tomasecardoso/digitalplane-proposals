@@ -1,0 +1,27 @@
+{
+  "id": "joao-carvalho-content-accelerator",
+  "clientName": "João Carvalho",
+  "clientCompany": "GoCrédito",
+  "offerName": "Content Accelerator",
+  "price": "5400",
+  "currency": "€",
+  "url": "https://proposals.digitalplane.pt/proposals/joao-carvalho-content-accelerator.html",
+  "createdAt": "2026-04-08T18:06:13.000Z",
+  "updatedAt": "2026-04-08T18:06:13.000Z",
+  "status": "accepted",
+  "inputs": {
+    "clientName": "João Carvalho",
+    "clientCompany": "GoCrédito",
+    "clientEmail": "joaocarvalho@gocredito.pt",
+    "clientSector": "Crédito Habitação",
+    "granolaNotes": "",
+    "extraContext": "",
+    "offerName": "Content Accelerator",
+    "offerDuration": "3 meses",
+    "offerPrice": "5400",
+    "offerCurrency": "€",
+    "offerPayment": "Pagamento único · €5.400 upfront",
+    "offerStart": "Abril 2026",
+    "offerDeliverables": "25 vídeos marca pessoal João Carvalho (3/semana)\n8 vídeos GoCrédito — equipa, estrutura, resultados\nEstratégia de posicionamento e pilares de conteúdo\nSessão de gravação 24 Abril — Lisboa\nPrioridade nos 12 scripts de anúncios\nEdição completa e publicação multiplataforma"
+  }
+}
