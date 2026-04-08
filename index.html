@@ -154,6 +154,35 @@
     .log-line.info{color:var(--accent);}
     .log-time{opacity:0.5;flex-shrink:0;}
 
+    /* ── OFFER CHIPS ── */
+    .offer-chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+    .offer-chip{font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;padding:0.6rem 1rem;background:var(--surface);border:1px solid var(--border-light);color:var(--text-2);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+    .offer-chip.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+    .offer-fields{display:none;}
+    .offer-fields.show{display:block;}
+    /* ── CHECK GRID ── */
+    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.5rem;}
+    .check-item{display:flex;align-items:center;gap:0.5rem;cursor:pointer;padding:0.5rem 0.75rem;background:var(--surface);border:1px solid var(--border);transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+    .check-item:has(input:checked){background:var(--accent-dim2);border-color:rgba(255,90,0,0.25);}
+    .check-item input{accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;}
+    .check-item span{font-size:0.78rem;color:var(--text-2);line-height:1.3;}
+    /* ── RECENT CLIENTS ── */
+    .client-chip{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;padding:0.4rem 0.8rem;background:var(--surface);border:1px solid var(--border-light);color:var(--text-2);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+    .client-chip:active{border-color:var(--accent);color:var(--accent);}
+    /* ── HISTORY ── */
+    .history-list{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;}
+    .history-item{padding:0.9rem 1rem;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;cursor:pointer;transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
+    .history-item:hover{background:var(--surface2);}
+    .history-item-info{flex:1;min-width:0;}
+    .history-item-name{font-size:0.85rem;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .history-item-meta{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--text-3);margin-top:0.2rem;}
+    .history-status{font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:0.08em;padding:0.2rem 0.5rem;border-radius:20px;flex-shrink:0;}
+    .history-status.sent{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(255,90,0,0.2);}
+    .history-status.accepted{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+    .history-status.lost{background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+    .history-status.draft{background:var(--surface2);color:var(--text-3);border:1px solid var(--border);}
+    .status-select{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.08em;padding:0.25rem 0.5rem;background:var(--surface2);border:1px solid var(--border);color:var(--text-2);outline:none;cursor:pointer;-webkit-appearance:none;}
+
     /* ── DRAWER (settings) ── */
     .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:800;display:none;backdrop-filter:blur(2px);}
     .drawer-overlay.show{display:block;}
@@ -255,6 +284,7 @@
       <div class="desktop-step" data-step="2" onclick="goStep(2)"><div class="ds-dot"></div><span class="ds-label">Notas da Reunião</span><span class="ds-tag">02</span></div>
       <div class="desktop-step" data-step="3" onclick="goStep(3)"><div class="ds-dot"></div><span class="ds-label">Oferta & Preço</span><span class="ds-tag">03</span></div>
       <div class="desktop-step" data-step="4" onclick="goStep(4)"><div class="ds-dot"></div><span class="ds-label">Gerar & Deploy</span><span class="ds-tag">04</span></div>
+      <div class="desktop-step" data-step="5" onclick="goStep(5)"><div class="ds-dot"></div><span class="ds-label">Histórico</span><span class="ds-tag">↗</span></div>
     </div>
     <div class="desktop-cfg">
       <div class="cfg-title">Configuração</div>
@@ -276,6 +306,7 @@
       <div class="step-tab" data-step="2" onclick="goStep(2)">02 Notas</div>
       <div class="step-tab" data-step="3" onclick="goStep(3)">03 Oferta</div>
       <div class="step-tab" data-step="4" onclick="goStep(4)">04 Gerar</div>
+      <div class="step-tab" data-step="5" onclick="goStep(5)">Histórico</div>
     </div>
 
     <div class="content" id="content">
@@ -284,8 +315,12 @@
       <div class="panel active" id="panel-1">
         <div class="panel-eyebrow">Passo 01</div>
         <div class="panel-title">Dados do Cliente</div>
-        <div class="panel-desc">Informação básica sobre quem recebe a proposta.</div>
-        <div class="field"><label class="field-label">Nome *</label><input type="text" class="field-input" id="client-name" placeholder="Ricardo Matos" autocomplete="off"/></div>
+        <div class="panel-desc">Selecciona um cliente anterior ou preenche os dados de um novo.</div>
+        <div class="field" id="recent-clients-field">
+          <label class="field-label">Clientes Recentes</label>
+          <div id="recent-clients" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
+        </div>
+        <div class="field"><label class="field-label">Nome *</label><input type="text" class="field-input" id="client-name" placeholder="Ricardo Matos" autocomplete="off" oninput="onClientNameChange()"/></div>
         <div class="field"><label class="field-label">Empresa</label><input type="text" class="field-input" id="client-company" placeholder="Pireza" autocomplete="off"/></div>
         <div class="field-row">
           <div class="field"><label class="field-label">Email</label><input type="email" class="field-input" id="client-email" placeholder="ricardo@pireza.pt"/></div>
@@ -329,12 +364,79 @@
       <div class="panel" id="panel-3">
         <div class="panel-eyebrow">Passo 03</div>
         <div class="panel-title">Oferta & Investimento</div>
-        <div class="panel-desc">Define o que está a ser proposto e as condições comerciais.</div>
-        <div class="field-row">
-          <div class="field"><label class="field-label">Nome da Oferta *</label><input type="text" class="field-input" id="offer-name" placeholder="Content Accelerator"/></div>
-          <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="offer-duration" placeholder="3 meses"/></div>
+        <div class="panel-desc">Selecciona uma oferta para pré-preencher os campos.</div>
+
+        <!-- OFFER SELECTOR -->
+        <div class="field">
+          <label class="field-label">Oferta *</label>
+          <div class="offer-chips" id="offer-chips">
+            <button class="offer-chip" onclick="selectOffer('content-accelerator')">Content Accelerator</button>
+            <button class="offer-chip" onclick="selectOffer('cobertura-eventos')">Cobertura de Eventos</button>
+            <button class="offer-chip" onclick="selectOffer('projeto')">Projeto</button>
+          </div>
+          <input type="hidden" id="offer-name"/>
         </div>
-        <div class="field-row">
+
+        <!-- CONTENT ACCELERATOR FIELDS -->
+        <div id="fields-content-accelerator" class="offer-fields" style="display:none;">
+          <div class="field-row">
+            <div class="field"><label class="field-label">Nº Vídeos Marca Pessoal</label><input type="number" class="field-input" id="ca-videos-personal" placeholder="25" inputmode="numeric"/></div>
+            <div class="field"><label class="field-label">Nº Vídeos Empresa</label><input type="number" class="field-input" id="ca-videos-company" placeholder="8" inputmode="numeric"/></div>
+          </div>
+          <div class="field">
+            <label class="field-label">Inclui</label>
+            <div class="check-grid">
+              <label class="check-item"><input type="checkbox" id="ca-strategy" checked/><span>Sessão de Estratégia</span></label>
+              <label class="check-item"><input type="checkbox" id="ca-publication" checked/><span>Publicação multiplataforma</span></label>
+              <label class="check-item"><input type="checkbox" id="ca-editing" checked/><span>Edição completa</span></label>
+              <label class="check-item"><input type="checkbox" id="ca-followup" checked/><span>Follow-up mensal</span></label>
+              <label class="check-item"><input type="checkbox" id="ca-ads"/><span>Scripts de anúncios</span></label>
+              <label class="check-item"><input type="checkbox" id="ca-vsl"/><span>VSL de conversão</span></label>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="ca-duration" placeholder="3 meses" value="3 meses"/></div>
+            <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start" placeholder="Abril 2026"/></div>
+          </div>
+        </div>
+
+        <!-- COBERTURA DE EVENTOS FIELDS -->
+        <div id="fields-cobertura-eventos" class="offer-fields" style="display:none;">
+          <div class="field"><label class="field-label">Nome do Evento</label><input type="text" class="field-input" id="ev-name" placeholder="Investor Connect"/></div>
+          <div class="field"><label class="field-label">Data do Evento</label><input type="text" class="field-input" id="ev-date" placeholder="23 de Maio 2026"/></div>
+          <div class="field">
+            <label class="field-label">Inclui</label>
+            <div class="check-grid">
+              <label class="check-item"><input type="checkbox" id="ev-filming" checked/><span>Filmagem completa</span></label>
+              <label class="check-item"><input type="checkbox" id="ev-highlights" checked/><span>Highlights / Recap</span></label>
+              <label class="check-item"><input type="checkbox" id="ev-testimonials"/><span>Testemunhos</span></label>
+              <label class="check-item"><input type="checkbox" id="ev-shorts"/><span>Short-form clips</span></label>
+              <label class="check-item"><input type="checkbox" id="ev-social"/><span>Conteúdo para redes sociais</span></label>
+            </div>
+          </div>
+          <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start-ev" placeholder="Abril 2026"/></div>
+        </div>
+
+        <!-- PROJETO FIELDS -->
+        <div id="fields-projeto" class="offer-fields" style="display:none;">
+          <div class="field"><label class="field-label">Descrição do Projeto</label><input type="text" class="field-input" id="proj-desc" placeholder="Série documental Pireza"/></div>
+          <div class="field">
+            <label class="field-label">Inclui</label>
+            <div class="check-grid">
+              <label class="check-item"><input type="checkbox" id="proj-direction" checked/><span>Direção criativa</span></label>
+              <label class="check-item"><input type="checkbox" id="proj-filming" checked/><span>Produção e filmagem</span></label>
+              <label class="check-item"><input type="checkbox" id="proj-editing" checked/><span>Edição completa</span></label>
+              <label class="check-item"><input type="checkbox" id="proj-strategy"/><span>Estratégia de distribuição</span></label>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">Duração</label><input type="text" class="field-input" id="proj-duration" placeholder="A definir"/></div>
+            <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start-proj" placeholder="Abril 2026"/></div>
+          </div>
+        </div>
+
+        <!-- PRICE (always visible) -->
+        <div class="field-row" id="price-row" style="display:none;margin-top:1rem;">
           <div class="field"><label class="field-label">Preço *</label><input type="text" class="field-input" id="offer-price" placeholder="4.800" inputmode="decimal"/></div>
           <div class="field"><label class="field-label">Moeda</label>
             <select class="field-select" id="offer-currency">
@@ -345,17 +447,14 @@
             </select>
           </div>
         </div>
-        <div class="field-row">
-          <div class="field"><label class="field-label">Pagamento</label><input type="text" class="field-input" id="offer-payment" placeholder="50% + 50%"/></div>
-          <div class="field"><label class="field-label">Início</label><input type="text" class="field-input" id="offer-start" placeholder="Abril 2026"/></div>
+        <div class="field" id="payment-row" style="display:none;">
+          <label class="field-label">Pagamento</label>
+          <input type="text" class="field-input" id="offer-payment" placeholder="Pagamento único"/>
         </div>
-        <div class="field">
-          <label class="field-label">Entregáveis (um por linha)</label>
-          <textarea class="field-textarea" id="offer-deliverables" placeholder="Sessão de estratégia&#10;8 vídeos curtos/mês&#10;2 vídeos longos/mês&#10;VSL de conversão&#10;Follow-up mensal"></textarea>
-        </div>
+
         <div class="actions">
           <button class="btn btn-ghost" onclick="goStep(2)">← Voltar</button>
-          <button class="btn btn-primary" onclick="goStep(4)">Seguinte →</button>
+          <button class="btn btn-primary" id="btn-to-step4" onclick="goStep(4)" disabled>Seguinte →</button>
         </div>
       </div>
 
@@ -423,6 +522,15 @@
         </div>
       </div>
 
+    <!-- STEP 5 — HISTORY -->
+      <div class="panel" id="panel-5">
+        <div class="panel-eyebrow">Histórico</div>
+        <div class="panel-title">Propostas</div>
+        <div class="panel-desc">Todas as propostas geradas. Toca para reabrir, editar status ou copiar o link.</div>
+        <div id="history-list" class="history-list"></div>
+        <div id="history-empty" style="font-size:0.8rem;color:var(--text-3);padding:2rem 0;display:none;">Ainda não há propostas guardadas.</div>
+      </div>
+
     </div><!-- /content -->
 
     <!-- PREVIEW PANE (desktop) -->
@@ -464,6 +572,9 @@ function unlock() {
     document.getElementById('lock').classList.add('hidden');
     document.getElementById('app').classList.add('unlocked');
     loadCfg();
+renderHistory();
+renderRecentClients();
+syncHistoryFromGitHub();
   } else {
     document.getElementById('lock-error').classList.add('show');
     document.getElementById('lock-input').value = '';
@@ -498,6 +609,210 @@ function loadCfg() {
   });
 }
 function cfg(k) { return localStorage.getItem('dp_'+k) || ''; }
+
+// ── OFFER TEMPLATES ──
+const OFFER_TEMPLATES = {
+  'content-accelerator': {
+    name: 'Content Accelerator',
+    duration: '3 meses',
+    payment: 'Pagamento único',
+  },
+  'cobertura-eventos': {
+    name: 'Cobertura de Eventos',
+    duration: '1 dia',
+    payment: 'Pagamento único',
+  },
+  'projeto': {
+    name: 'Projeto',
+    duration: 'A definir',
+    payment: '50% entrada · 50% na entrega',
+  }
+};
+
+let activeOffer = null;
+
+function selectOffer(key) {
+  activeOffer = key;
+  // Update chips
+  document.querySelectorAll('.offer-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  // Hide all offer fields
+  document.querySelectorAll('.offer-fields').forEach(f => { f.style.display='none'; f.classList.remove('show'); });
+  // Show selected
+  const fields = document.getElementById('fields-'+key);
+  if (fields) { fields.style.display='block'; fields.classList.add('show'); }
+  // Show price/payment rows
+  document.getElementById('price-row').style.display = 'grid';
+  document.getElementById('payment-row').style.display = 'flex';
+  // Pre-fill hidden offer-name
+  const t = OFFER_TEMPLATES[key];
+  document.getElementById('offer-name').value = t.name;
+  if (document.getElementById('offer-payment')) document.getElementById('offer-payment').value = t.payment;
+  // Enable next button
+  document.getElementById('btn-to-step4').disabled = false;
+}
+
+function buildDeliverables() {
+  if (!activeOffer) return '';
+  const lines = [];
+  if (activeOffer === 'content-accelerator') {
+    const vP = document.getElementById('ca-videos-personal').value;
+    const vC = document.getElementById('ca-videos-company').value;
+    const dur = document.getElementById('ca-duration').value || '3 meses';
+    if (vP) lines.push(`${vP} vídeos para marca pessoal (${dur})`);
+    if (vC) lines.push(`${vC} vídeos para marca empresa`);
+    if (document.getElementById('ca-strategy').checked) lines.push('Sessão de estratégia e posicionamento');
+    if (document.getElementById('ca-editing').checked) lines.push('Edição completa');
+    if (document.getElementById('ca-publication').checked) lines.push('Publicação multiplataforma (Instagram, YouTube, LinkedIn, TikTok)');
+    if (document.getElementById('ca-followup').checked) lines.push('Follow-up mensal de resultados');
+    if (document.getElementById('ca-ads').checked) lines.push('Scripts de anúncios');
+    if (document.getElementById('ca-vsl').checked) lines.push('VSL de conversão');
+  } else if (activeOffer === 'cobertura-eventos') {
+    const evName = document.getElementById('ev-name').value;
+    const evDate = document.getElementById('ev-date').value;
+    if (evName) lines.push(`Cobertura do evento: ${evName}${evDate?' ('+evDate+')':''}`);
+    if (document.getElementById('ev-filming').checked) lines.push('Filmagem completa do evento');
+    if (document.getElementById('ev-highlights').checked) lines.push('Highlights / Recap');
+    if (document.getElementById('ev-testimonials').checked) lines.push('Testemunhos de participantes');
+    if (document.getElementById('ev-shorts').checked) lines.push('Short-form clips para redes sociais');
+    if (document.getElementById('ev-social').checked) lines.push('Conteúdo para redes sociais');
+  } else if (activeOffer === 'projeto') {
+    const desc = document.getElementById('proj-desc').value;
+    if (desc) lines.push(desc);
+    if (document.getElementById('proj-direction').checked) lines.push('Direção criativa');
+    if (document.getElementById('proj-filming').checked) lines.push('Produção e filmagem');
+    if (document.getElementById('proj-editing').checked) lines.push('Edição completa');
+    if (document.getElementById('proj-strategy').checked) lines.push('Estratégia de distribuição');
+  }
+  return lines.join('\n');
+}
+
+function getOfferDuration() {
+  if (activeOffer === 'content-accelerator') return document.getElementById('ca-duration').value || '3 meses';
+  if (activeOffer === 'cobertura-eventos') return '1 dia';
+  if (activeOffer === 'projeto') return document.getElementById('proj-duration').value || 'A definir';
+  return '3 meses';
+}
+
+function getOfferStart() {
+  if (activeOffer === 'content-accelerator') return document.getElementById('offer-start').value;
+  if (activeOffer === 'cobertura-eventos') return document.getElementById('offer-start-ev').value;
+  if (activeOffer === 'projeto') return document.getElementById('offer-start-proj').value;
+  return '';
+}
+
+// ── HISTORY ──
+const HISTORY_KEY = 'dp_proposals_history';
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveToHistory(inputs, url) {
+  const history = loadHistory();
+  const id = slugify(inputs.clientName + '-' + inputs.offerName);
+  const existing = history.findIndex(h => h.id === id);
+  const entry = {
+    id,
+    clientName: inputs.clientName,
+    clientCompany: inputs.clientCompany,
+    offerName: inputs.offerName,
+    price: inputs.offerPrice,
+    currency: inputs.offerCurrency,
+    url,
+    createdAt: existing >= 0 ? history[existing].createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: existing >= 0 ? history[existing].status : 'sent',
+    inputs,
+  };
+  if (existing >= 0) history[existing] = entry;
+  else history.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+  renderHistory();
+  return entry; // return for GitHub push
+}
+
+function updateStatus(id, status) {
+  const history = loadHistory();
+  const idx = history.findIndex(h => h.id === id);
+  if (idx >= 0) {
+    history[idx].status = status;
+    history[idx].updatedAt = new Date().toISOString();
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    renderHistory();
+    pushStatusToGitHub(history[idx]); // sync status to GitHub
+  }
+}
+
+function loadFromHistory(entry) {
+  // Fill Step 1
+  document.getElementById('client-name').value = entry.clientName || '';
+  document.getElementById('client-company').value = entry.clientCompany || '';
+  if (entry.inputs) {
+    document.getElementById('client-email').value = entry.inputs.clientEmail || '';
+    document.getElementById('client-sector').value = entry.inputs.clientSector || '';
+    document.getElementById('granola-notes').value = entry.inputs.granolaNotes || '';
+    document.getElementById('extra-context').value = entry.inputs.extraContext || '';
+    document.getElementById('offer-price').value = entry.inputs.offerPrice || '';
+    document.getElementById('offer-currency').value = entry.inputs.offerCurrency || '€';
+    document.getElementById('offer-payment').value = entry.inputs.offerPayment || '';
+  }
+  goStep(1);
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const list = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  if (!list) return;
+  if (history.length === 0) { list.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  const STATUS_LABELS = { sent:'Enviada', accepted:'Aceite', lost:'Perdida', draft:'Rascunho' };
+  list.innerHTML = history.map(h => {
+    const d = new Date(h.updatedAt).toLocaleDateString('pt-PT',{day:'numeric',month:'short'});
+    const price = h.price ? ` · ${h.currency||'€'}${Number(String(h.price).replace(/\./g,'')).toLocaleString('pt-PT')}` : '';
+    return `<div class="history-item">
+      <div class="history-item-info" onclick="loadFromHistory(${JSON.stringify(h).replace(/"/g,'&quot;')})">
+        <div class="history-item-name">${h.clientName} — ${h.offerName}</div>
+        <div class="history-item-meta">${d}${price}</div>
+      </div>
+      <select class="status-select history-status ${h.status}" onchange="updateStatus('${h.id}',this.value)" onclick="event.stopPropagation()">
+        <option value="sent" ${h.status==='sent'?'selected':''}>Enviada</option>
+        <option value="accepted" ${h.status==='accepted'?'selected':''}>Aceite</option>
+        <option value="lost" ${h.status==='lost'?'selected':''}>Perdida</option>
+        <option value="draft" ${h.status==='draft'?'selected':''}>Rascunho</option>
+      </select>
+      <a href="${h.url}" target="_blank" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--accent);text-decoration:none;padding:0.25rem 0.5rem;border:1px solid rgba(255,90,0,0.3);flex-shrink:0;" onclick="event.stopPropagation()">↗</a>
+    </div>`;
+  }).join('');
+}
+
+// ── RECENT CLIENTS ──
+function renderRecentClients() {
+  const history = loadHistory();
+  const seen = new Set();
+  const unique = history.filter(h => { if (seen.has(h.clientName)) return false; seen.add(h.clientName); return true; }).slice(0, 6);
+  const container = document.getElementById('recent-clients');
+  const field = document.getElementById('recent-clients-field');
+  if (!container) return;
+  if (unique.length === 0) { if(field) field.style.display='none'; return; }
+  if(field) field.style.display='block';
+  container.innerHTML = unique.map(h =>
+    `<button class="client-chip" onclick="fillClient('${h.clientName}','${h.clientCompany}',${JSON.stringify(h.inputs||{}).replace(/"/g,'&quot;')})">${h.clientName}</button>`
+  ).join('');
+}
+
+function fillClient(name, company, inputs) {
+  document.getElementById('client-name').value = name;
+  document.getElementById('client-company').value = company || '';
+  if (inputs && inputs.clientEmail) document.getElementById('client-email').value = inputs.clientEmail;
+  if (inputs && inputs.clientSector) document.getElementById('client-sector').value = inputs.clientSector;
+}
+
+function onClientNameChange() {
+  // nothing for now — future autocomplete
+}
 
 // ── DRAWER ──
 function openDrawer() {
@@ -609,16 +924,17 @@ function collectInputs() {
   return {
     clientName: document.getElementById('client-name').value.trim(),
     clientCompany: document.getElementById('client-company').value.trim(),
+    clientEmail: document.getElementById('client-email').value.trim(),
     clientSector: document.getElementById('client-sector').value.trim(),
     granolaNotes: document.getElementById('granola-notes').value.trim(),
     extraContext: document.getElementById('extra-context').value.trim(),
     offerName: document.getElementById('offer-name').value.trim(),
-    offerDuration: document.getElementById('offer-duration').value.trim(),
+    offerDuration: getOfferDuration(),
     offerPrice: document.getElementById('offer-price').value.trim(),
     offerCurrency: document.getElementById('offer-currency').value,
     offerPayment: document.getElementById('offer-payment').value.trim(),
-    offerStart: document.getElementById('offer-start').value.trim(),
-    offerDeliverables: document.getElementById('offer-deliverables').value.trim(),
+    offerStart: getOfferStart(),
+    offerDeliverables: buildDeliverables(),
   };
 }
 
@@ -801,16 +1117,75 @@ function buildHTML(inputs, content) {
 }
 
 // ── GITHUB ──
-async function pushToGitHub(filename, html) {
+async function ghPut(path, contentB64, message) {
   const token=cfg('github'), repo=cfg('repo');
-  if (!token||!repo) throw new Error('GitHub não configurado');
-  const path=`proposals/${filename}`;
-  const content=btoa(unescape(encodeURIComponent(html)));
   const apiUrl=`https://api.github.com/repos/${repo}/contents/${path}`;
   let sha;
-  try { const c=await fetch(apiUrl,{headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}}); if(c.ok) sha=(await c.json()).sha; } catch(e){}
-  const res=await fetch(apiUrl,{method:'PUT',headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({message:`Proposta: ${filename.replace('.html','')}`,content,...(sha?{sha}:{})})});
+  try { const r=await fetch(apiUrl,{headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}}); if(r.ok) sha=(await r.json()).sha; } catch(e){}
+  const res=await fetch(apiUrl,{method:'PUT',headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({message,content:contentB64,...(sha?{sha}:{})})});
   if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(`GitHub ${res.status}: ${e.message}`); }
+}
+
+async function pushToGitHub(filename, html, metaEntry) {
+  const token=cfg('github'), repo=cfg('repo');
+  if (!token||!repo) throw new Error('GitHub não configurado');
+  // Push HTML
+  const htmlB64=btoa(unescape(encodeURIComponent(html)));
+  await ghPut(`proposals/${filename}`, htmlB64, `Proposta: ${filename.replace('.html','')}`);
+  // Push JSON metadata (lightweight, no inputs.granolaNotes to keep it small)
+  if (metaEntry) {
+    const meta = {...metaEntry};
+    if (meta.inputs) { meta.inputs = {...meta.inputs, granolaNotes: '', extraContext: ''}; }
+    const jsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(meta, null, 2))));
+    await ghPut(`data/${filename.replace('.html','.json')}`, jsonB64, `Meta: ${filename.replace('.html','')}`);
+  }
+}
+
+async function syncHistoryFromGitHub() {
+  const token=cfg('github'), repo=cfg('repo');
+  if (!token||!repo) return;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/data`, {
+      headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}
+    });
+    if (!res.ok) return;
+    const files = await res.json();
+    if (!Array.isArray(files)) return;
+    const local = loadHistory();
+    const localIds = new Set(local.map(h => h.id));
+    const fetches = files
+      .filter(f => f.name.endsWith('.json'))
+      .map(f => fetch(f.download_url).then(r => r.json()).catch(() => null));
+    const remoteEntries = (await Promise.all(fetches)).filter(Boolean);
+    // Merge: remote entries not in local get added; local status takes priority
+    let changed = false;
+    for (const remote of remoteEntries) {
+      if (!remote.id) continue;
+      const idx = local.findIndex(h => h.id === remote.id);
+      if (idx < 0) {
+        local.push(remote);
+        changed = true;
+      }
+      // If exists locally, keep local (has status updates)
+    }
+    if (changed) {
+      local.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(local.slice(0,50)));
+      renderHistory();
+      renderRecentClients();
+    }
+  } catch(e) { console.warn('Sync failed:', e); }
+}
+
+async function pushStatusToGitHub(entry) {
+  const token=cfg('github'), repo=cfg('repo');
+  if (!token||!repo) return;
+  try {
+    const meta = {...entry};
+    if (meta.inputs) { meta.inputs = {...meta.inputs, granolaNotes: '', extraContext: ''}; }
+    const jsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(meta, null, 2))));
+    await ghPut(`data/${entry.id}.json`, jsonB64, `Status: ${entry.id}`);
+  } catch(e) { console.warn('Status sync failed:', e); }
 }
 
 // ── PIPELINE ──
@@ -851,7 +1226,8 @@ async function runPipeline() {
   updatePreview(S.generatedHTML, 1);
 
   showLoading('A publicar...','A fazer push para GitHub');
-  try { await pushToGitHub(filename, S.generatedHTML); log('Publicado ✓','ok'); }
+  const metaEntry = saveToHistory(S.inputs, ''); // save locally first, get entry back
+  try { await pushToGitHub(filename, S.generatedHTML, metaEntry); log('Publicado ✓','ok'); }
   catch(e) { log('Aviso GitHub: '+e.message,'err'); }
 
   let base=cfg('baseurl').replace(/\/$/,'');
@@ -861,6 +1237,8 @@ async function runPipeline() {
   log('URL: '+url,'ok');
 
   document.getElementById('page-title').textContent=S.inputs.clientName+' — '+S.inputs.offerName;
+  metaEntry.url = url; // update url in local history
+  saveToHistory(S.inputs, url);
   showResult(url);
 }
 
@@ -879,7 +1257,7 @@ async function applyFeedback() {
     log('Revisão gerada ✓','ok');
     S.currentContent=updated;
     S.generatedHTML=buildHTML(S.inputs, S.currentContent);
-    try { await pushToGitHub(slug+'.html', S.generatedHTML); log('Republicado ✓','ok'); }
+    try { const rEntry = saveToHistory(S.inputs, S.proposalUrl||''); await pushToGitHub(slug+'.html', S.generatedHTML, rEntry); log('Republicado ✓','ok'); }
     catch(e) { log('Aviso GitHub: '+e.message,'err'); }
     S.revisionCount++;
     S.feedbackHistory.push(feedback);
