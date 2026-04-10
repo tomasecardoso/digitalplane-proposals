@@ -1,0 +1,27 @@
+{
+  "id": "marco-tairum-content-accelerator",
+  "clientName": "Marco Tairum",
+  "clientCompany": "BurnBright",
+  "offerName": "Content Accelerator",
+  "price": "5000€ + %",
+  "currency": "€",
+  "url": "",
+  "createdAt": "2026-04-10T22:35:57.513Z",
+  "updatedAt": "2026-04-10T22:35:57.513Z",
+  "status": "sent",
+  "inputs": {
+    "clientName": "Marco Tairum",
+    "clientCompany": "BurnBright",
+    "clientEmail": "",
+    "clientSector": "Personal Development",
+    "granolaNotes": "",
+    "extraContext": "",
+    "offerName": "Content Accelerator",
+    "offerDuration": "1 Ano",
+    "offerPrice": "5000€ + %",
+    "offerCurrency": "€",
+    "offerPayment": "Pagamento único",
+    "offerStart": "Abril 2026",
+    "offerDeliverables": "30 vídeos para marca pessoal (1 Ano)\nSessão de estratégia e posicionamento\nEdição completa\nPublicação multiplataforma (Instagram, YouTube, LinkedIn, TikTok)\nFollow-up mensal de resultados\nScripts de anúncios\nVSL de conversão"
+  }
+}
