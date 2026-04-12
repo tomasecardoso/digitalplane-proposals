@@ -3,11 +3,11 @@
   "clientName": "Marco Tairum",
   "clientCompany": "BurnBright",
   "offerName": "Content Accelerator",
-  "price": "5000€ + %",
+  "price": "5000€ + 30%",
   "currency": "€",
-  "url": "https://proposals.digitalplane.pt/proposals/marco-tairum-content-accelerator.html",
+  "url": "",
   "createdAt": "2026-04-10T22:35:57.513Z",
-  "updatedAt": "2026-04-10T22:36:00.040Z",
+  "updatedAt": "2026-04-12T19:58:26.151Z",
   "status": "sent",
   "inputs": {
     "clientName": "Marco Tairum",
@@ -17,11 +17,11 @@
     "granolaNotes": "",
     "extraContext": "",
     "offerName": "Content Accelerator",
-    "offerDuration": "1 Ano",
-    "offerPrice": "5000€ + %",
+    "offerDuration": "3 meses",
+    "offerPrice": "5000€ + 30%",
     "offerCurrency": "€",
-    "offerPayment": "Pagamento único",
+    "offerPayment": "Pagamento único - após 3 meses: Retainer de 1800€ por mês",
     "offerStart": "Abril 2026",
-    "offerDeliverables": "30 vídeos para marca pessoal (1 Ano)\nSessão de estratégia e posicionamento\nEdição completa\nPublicação multiplataforma (Instagram, YouTube, LinkedIn, TikTok)\nFollow-up mensal de resultados\nScripts de anúncios\nVSL de conversão"
+    "offerDeliverables": "Sessão de estratégia e posicionamento\nEdição completa\nPublicação multiplataforma (Instagram, YouTube, LinkedIn, TikTok)\nFollow-up mensal de resultados"
   }
 }
